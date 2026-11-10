@@ -38,7 +38,6 @@ h2{font-size:clamp(1.8rem,3.2vw,2.6rem);font-weight:700;margin:.35rem 0 .6rem}
 .header.scrolled{border-color:var(--line);box-shadow:0 6px 24px rgba(18,21,75,.06)}
 .header .container{display:flex;align-items:center;justify-content:space-between;height:78px;gap:24px}
 .logo{display:flex;align-items:center}
-.logo svg{height:52px;width:auto;overflow:visible}
 .nav{display:flex;gap:6px;align-items:center}
 .nav a{padding:.55rem .9rem;border-radius:999px;font-weight:700;font-size:.95rem;color:var(--navy);transition:background .25s,color .25s}
 .nav a:hover,.nav a.active{background:#fdeaf3;color:var(--magenta)}
@@ -46,21 +45,46 @@ h2{font-size:clamp(1.8rem,3.2vw,2.6rem);font-weight:700;margin:.35rem 0 .6rem}
 .menu-btn{display:none;background:none;border:0;width:44px;height:44px;border-radius:12px}
 .menu-btn span{display:block;width:22px;height:2px;background:var(--navy);margin:5px auto;transition:.3s}
 
-/* ---------- animated logo ---------- */
-.lg-orbit{fill:none;stroke:url(#lgGrad);stroke-width:2.4;stroke-linecap:round;stroke-dasharray:140;stroke-dashoffset:140;animation:lgDraw 1.6s var(--ease) .2s forwards}
-.lg-globe{fill:none;stroke:var(--navy);stroke-width:2.2}
-.lg-meridian{fill:none;stroke:var(--cyan);stroke-width:1.6;transform-box:fill-box;transform-origin:center;animation:lgSpin 6s linear infinite}
-.lg-meridian.m2{animation-delay:-3s}
-.lg-plane{fill:var(--magenta);offset-path:path('M6 34 C 18 6, 58 4, 66 22');offset-rotate:auto;animation:lgFly 1.6s var(--ease) .2s both}
-.lg-word{opacity:0;animation:lgIn .7s var(--ease) .9s forwards}
-.lg-word.w2{animation-delay:1.05s}
-.logo:hover .lg-plane{animation:lgFly 1.2s var(--ease) both}
-.logo:hover .lg-orbit{animation:lgRedraw 1.2s var(--ease) both}
-@keyframes lgDraw{to{stroke-dashoffset:0}}
-@keyframes lgRedraw{from{stroke-dashoffset:140}to{stroke-dashoffset:0}}
-@keyframes lgFly{from{offset-distance:0%;opacity:0}15%{opacity:1}to{offset-distance:100%}}
-@keyframes lgSpin{0%{transform:scaleX(1)}50%{transform:scaleX(.08)}100%{transform:scaleX(1)}}
-@keyframes lgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* ---------- animated 3D logo (built from the original Jumbo Travel logo) ---------- */
+.logo{display:flex;align-items:center}
+.jl{--ink:var(--navy);--h:54px;display:inline-flex;align-items:center;gap:10px;height:var(--h)}
+.jl-word{display:block;background:var(--ink);-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat;opacity:0}
+.jl-en{--m:url(/img/logo-en.png);width:calc(var(--h)*1.18);height:calc(var(--h)*.385);animation:jlInL .9s var(--ease) .55s forwards}
+.jl-ar{--m:url(/img/logo-ar.png);width:calc(var(--h)*1.18);height:calc(var(--h)*.42);animation:jlInR .9s var(--ease) .7s forwards}
+.jl-stage{position:relative;width:var(--h);height:var(--h);perspective:260px;flex:none}
+.jl-3d{position:absolute;inset:0;transform-style:preserve-3d;animation:jlEnter 1.3s var(--ease) both,jlWobble 7s ease-in-out 1.3s infinite}
+.jl-sphere{position:absolute;inset:6%;border-radius:50%;overflow:hidden;transform:translateZ(0);
+  background:radial-gradient(circle at 34% 28%,#3a3f9a 0%,#1d2170 38%,#12154b 66%,#07082a 100%);
+  box-shadow:inset -6px -8px 14px rgba(0,0,0,.55),inset 4px 5px 10px rgba(120,130,255,.25),0 6px 16px rgba(18,21,75,.35)}
+.jl-swirl{position:absolute;inset:6%;background:url(/img/logo-globe.png) center/contain no-repeat;animation:jlSpin 14s linear infinite;filter:drop-shadow(0 0 1.5px rgba(255,255,255,.6))}
+.jl-swirl-2{opacity:.18;transform:scale(1.04);animation-duration:22s;animation-direction:reverse;filter:blur(.6px)}
+.jl-shine{position:absolute;inset:0;border-radius:50%;background:
+  radial-gradient(circle at 30% 24%,rgba(255,255,255,.32) 0 6%,transparent 22%),
+  radial-gradient(circle at 70% 85%,rgba(28,173,227,.35),transparent 45%),
+  linear-gradient(115deg,transparent 40%,rgba(255,255,255,.2) 50%,transparent 60%);
+  background-size:100% 100%,100% 100%,250% 100%;animation:jlSweep 5s ease-in-out 1.6s infinite}
+.jl-ring{position:absolute;inset:-4%;border-radius:50%;transform-style:preserve-3d;transform:rotateX(74deg) rotateY(-14deg)}
+.jl-ring::before{content:"";position:absolute;inset:0;border-radius:50%;border:1.6px solid transparent;
+  background:conic-gradient(from 0deg,var(--magenta),var(--plum),var(--cyan),var(--magenta)) border-box;
+  -webkit-mask:linear-gradient(#000 0 0) padding-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.jl-ring-back{transform:rotateX(74deg) rotateY(-14deg) translateZ(-1px);clip-path:inset(0 0 50% 0);opacity:.55}
+.jl-ring-front{clip-path:inset(50% 0 0 0);animation:jlRingIn 1s var(--ease) .4s both}
+.jl-comet{position:absolute;inset:0;border-radius:50%;animation:jlOrbit 3.2s linear infinite}
+.jl-comet::after{content:"";position:absolute;left:50%;bottom:-3px;width:7px;height:7px;margin-left:-3.5px;border-radius:50%;background:#fff;box-shadow:0 0 6px 2px var(--pink),0 0 12px 4px rgba(238,21,121,.5)}
+.jl-shadow{position:absolute;left:18%;right:18%;bottom:-5px;height:5px;border-radius:50%;background:radial-gradient(rgba(18,21,75,.35),transparent 70%);animation:jlShadow 7s ease-in-out 1.3s infinite}
+.logo:hover .jl-swirl{animation-duration:3s}
+.logo:hover .jl-comet{animation-duration:1.2s}
+@keyframes jlEnter{0%{opacity:0;transform:translateY(-30px) rotateY(-180deg) scale(.4)}60%{opacity:1}100%{opacity:1;transform:none}}
+@keyframes jlWobble{0%,100%{transform:rotateX(8deg) rotateY(-16deg)}50%{transform:rotateX(-8deg) rotateY(16deg) translateY(-2px)}}
+@keyframes jlShadow{0%,100%{transform:scaleX(1);opacity:1}50%{transform:scaleX(.8);opacity:.6}}
+@keyframes jlSpin{to{transform:rotate(-360deg)}}
+@keyframes jlOrbit{to{transform:rotate(360deg)}}
+@keyframes jlSweep{0%,55%{background-position:0 0,0 0,130% 0}100%{background-position:0 0,0 0,-60% 0}}
+@keyframes jlRingIn{from{opacity:0;transform:rotateX(74deg) rotateY(-14deg) scale(.4)}to{opacity:1}}
+@keyframes jlInL{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+@keyframes jlInR{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+.footer .jl{--ink:#fff}
+.footer .jl-shadow{display:none}
 
 /* ---------- hero ---------- */
 .hero{position:relative;min-height:min(88vh,760px);display:grid;align-items:center;color:#fff;overflow:hidden;isolation:isolate}
@@ -168,9 +192,6 @@ h2{font-size:clamp(1.8rem,3.2vw,2.6rem);font-weight:700;margin:.35rem 0 .6rem}
 .footer h4{color:#fff;font-size:1rem;margin-bottom:16px}
 .footer ul{list-style:none;padding:0;display:grid;gap:10px}
 .footer a:hover{color:#fff}
-.footer .logo svg{height:48px}
-.footer .logo .lg-globe,.footer .logo .lg-word.w1{stroke:#fff;fill:#fff}
-.footer .logo .lg-globe{fill:none}
 .footer .bottom{border-top:1px solid rgba(255,255,255,.08);margin-top:50px;padding-top:24px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:.85rem}
 
 /* ---------- package detail ---------- */
@@ -238,12 +259,12 @@ h2{font-size:clamp(1.8rem,3.2vw,2.6rem);font-weight:700;margin:.35rem 0 .6rem}
 @media (max-width:560px){
   .features{grid-template-columns:1fr}
   .footer .cols{grid-template-columns:1fr}
-  .logo svg{height:44px}
+  .jl{--h:44px;gap:6px}.jl-ar{display:none}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
   .reveal,.stagger>*{opacity:1;transform:none}
-  .lg-orbit{stroke-dashoffset:0}.lg-word{opacity:1}
+  .jl-word{opacity:1}
 }
 .nav a.btn,.nav a.btn:hover{color:#fff;background:var(--grad)}
 .deal .row{gap:8px;flex-wrap:wrap}

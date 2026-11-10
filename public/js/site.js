@@ -22,20 +22,18 @@ const icons = {
 const svg = (name, size = 20) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true">${icons[name]}</svg>`;
 
 const LOGO = `
-<svg viewBox="0 0 250 64" role="img" aria-label="Jumbo Travel">
-  <defs><linearGradient id="lgGrad" x1="0" x2="1"><stop offset="0" stop-color="#1cade3"/><stop offset=".55" stop-color="#ee1579"/><stop offset="1" stop-color="#87156e"/></linearGradient>
-  <clipPath id="lgClip"><circle cx="36" cy="34" r="19"/></clipPath></defs>
-  <circle class="lg-globe" cx="36" cy="34" r="19"/>
-  <g clip-path="url(#lgClip)">
-    <ellipse class="lg-meridian" cx="36" cy="34" rx="9" ry="19"/>
-    <ellipse class="lg-meridian m2" cx="36" cy="34" rx="16" ry="19"/>
-    <path class="lg-globe" d="M17 28h38M17 40h38" stroke-width="1.4"/>
-  </g>
-  <path class="lg-orbit" d="M6 34 C 18 6, 58 4, 66 22"/>
-  <path class="lg-plane" d="M-6 -3.4 L7 0 L-6 3.4 L-3 0 Z"/>
-  <text class="lg-word w1" x="76" y="38" font-family="Lato,sans-serif" font-weight="700" font-size="30" fill="#12154b" letter-spacing="-.5">jumbo</text>
-  <text class="lg-word w2" x="78" y="56" font-family="Lato,sans-serif" font-weight="300" font-size="14.5" fill="#ee1579" letter-spacing="6.2">TRAVEL</text>
-</svg>`;
+<span class="jl" role="img" aria-label="Jumbo Travel">
+  <span class="jl-word jl-en"></span>
+  <span class="jl-stage" aria-hidden="true">
+    <span class="jl-3d">
+      <span class="jl-ring jl-ring-back"></span>
+      <span class="jl-sphere"><span class="jl-swirl"></span><span class="jl-swirl jl-swirl-2"></span><span class="jl-shine"></span></span>
+      <span class="jl-ring jl-ring-front"><i class="jl-comet"></i></span>
+    </span>
+    <span class="jl-shadow"></span>
+  </span>
+  <span class="jl-word jl-ar"></span>
+</span>`;
 
 const page = document.body.dataset.page;
 let CONTENT = null;
