@@ -145,23 +145,85 @@ async function saveItem(coll, item, body) {
 }
 async function deleteItem(coll, item) { await api(`${coll}/${item.id}`, { method: 'DELETE' }); await refresh(); toast('Deleted'); VIEWS[VIEW](); }
 
+const ICON = {
+  box: '<svg viewBox="0 0 24 24" width="20" height="20"><path d="M20 6h-4V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM10 4h4v2h-4z" fill="currentColor"/></svg>',
+  tag: '<svg viewBox="0 0 24 24" width="20" height="20"><path d="M21.4 11.6l-9-9A2 2 0 0 0 11 2H4a2 2 0 0 0-2 2v7c0 .6.2 1.1.6 1.4l9 9a2 2 0 0 0 2.8 0l7-7a2 2 0 0 0 0-2.8zM6.5 8a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>',
+  plane: '<svg viewBox="0 0 24 24" width="20" height="20"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z" fill="currentColor"/></svg>',
+  bed: '<svg viewBox="0 0 24 24" width="20" height="20"><path d="M3 21V5h2v9h7V7h6a3 3 0 0 1 3 3v11h-2v-3H5v3zm5-8a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" fill="currentColor"/></svg>',
+};
+function ago(iso) { const s = (Date.now() - new Date(iso)) / 1000; return s < 60 ? 'just now' : s < 3600 ? `${Math.floor(s / 60)} min ago` : s < 86400 ? `${Math.floor(s / 3600)} h ago` : `${Math.floor(s / 86400)} d ago`; }
+let AI_ON = null;
+
 // ---------- views ----------
 const VIEWS = {
   dashboard() {
-    const P = DATA.packages, D = DATA.deals;
-    $('#view').innerHTML = `<div class="top"><div><h1>Welcome back 👋</h1><p>Everything you change here goes live on the website straight away.</p></div><a class="btn btn-ghost" href="/" target="_blank">View website ↗</a></div>
-    <div class="stats">
-      <div class="card stat"><b>${P.filter(p => p.active).length}</b><span>Live packages</span></div>
-      <div class="card stat"><b>${P.filter(p => p.featured && p.active).length}</b><span>Featured on homepage</span></div>
-      <div class="card stat"><b>${D.filter(d => d.active && d.type === 'flight').length}</b><span>Flight deals</span></div>
-      <div class="card stat"><b>${D.filter(d => d.active && d.type === 'hotel').length}</b><span>Hotel deals</span></div>
-    </div>
-    <div class="card"><h3 style="color:var(--navy);margin-bottom:12px">Quick actions</h3><div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn btn-primary" data-q="packages">+ Add a package</button><button class="btn btn-ghost" data-q="deals">Update deal prices</button><button class="btn btn-ghost" data-q="slides">Change homepage banners</button><button class="btn btn-ghost" data-q="site">Edit contact details</button></div></div>
-    <div class="card" style="margin-top:16px"><h3 style="color:var(--navy);margin-bottom:12px">Recently updated</h3><div class="items">
-      ${[...P, ...D].filter(x => x.updatedAt).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 5).map(x => `<div style="display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding:8px 0"><span>${esc(x.title)}</span><span class="hint">${new Date(x.updatedAt).toLocaleString()}</span></div>`).join('') || '<p class="hint">No changes yet.</p>'}
-    </div></div>`;
-    $$('[data-q]').forEach(b => b.onclick = () => { go(b.dataset.q); if (b.dataset.q === 'packages') $('#add').click(); });
+    const P = DATA.packages, D = DATA.deals, S = DATA.slides, cur = DATA.site.currency;
+    const live = P.filter(p => p.active), fl = D.filter(d => d.type === 'flight' && d.active), ht = D.filter(d => d.type === 'hotel' && d.active);
+    const avg = live.length ? live.reduce((a, p) => a + p.price, 0) / live.length : 0;
+    const min = arr => arr.length ? Math.min(...arr.map(x => x.price)) : 0;
+    const spark = vals => { if (vals.length < 2) vals = [0, ...vals, 0]; const mx = Math.max(...vals, 1), w = 200, h = 44, pts = vals.map((v, i) => [i * w / (vals.length - 1), h - 4 - (v / mx) * (h - 10)]); const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' '); return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><defs><linearGradient id="sg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ee1579" stop-opacity=".25"/><stop offset="1" stop-color="#ee1579" stop-opacity="0"/></linearGradient></defs><path d="${d} L${w} ${h} L0 ${h}Z" fill="url(#sg)"/><path d="${d}" fill="none" stroke="#ee1579" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`; };
+
+    // content health checks
+    const checks = [
+      [live.every(p => p.images.length >= 2), `Every package has 2+ photos`, P.filter(p => p.images.length < 2)],
+      [live.every(p => p.description && p.description.length > 80), `Every package has a full description`, P.filter(p => !p.description || p.description.length <= 80)],
+      [live.every(p => p.inclusions.length >= 3), `Packages list what's included`, P.filter(p => p.inclusions.length < 3)],
+      [live.some(p => p.featured) && live.filter(p => p.featured).length <= 6, `1–6 packages featured on homepage`, []],
+      [S.filter(s => s.active).length >= 3, `At least 3 homepage banners`, []],
+      [!!DATA.site.whatsapp, `WhatsApp number added`, []],
+      [D.every(d => d.image), `All deals have photos`, D.filter(d => !d.image)],
+    ];
+    const score = Math.round(checks.filter(c => c[0]).length / checks.length * 100);
+
+    // assistant tips (rule-based insights)
+    const tips = [];
+    checks.forEach(([ok, label, items]) => { if (!ok) tips.push({ t: items.length ? `${items.length} item${items.length > 1 ? 's need' : ' needs'} attention: ${label.toLowerCase()} — e.g. “${esc(items[0].title)}”.` : `Not done yet: ${label.toLowerCase()}.`, act: items[0] ? (P.includes(items[0]) ? ['packages', items[0].id] : ['deals', items[0].id]) : [label.includes('WhatsApp') ? 'site' : label.includes('banner') ? 'slides' : 'packages'] }); });
+    const stale = D.filter(d => !d.updatedAt || Date.now() - new Date(d.updatedAt) > 14 * 864e5);
+    if (stale.length) tips.push({ t: `${stale.length} deal prices haven't been checked in 2+ weeks. Fresh prices build trust.`, act: ['deals'], cls: 'info' });
+    const noOffer = live.filter(p => !p.oldPrice);
+    if (noOffer.length && live.length) tips.push({ t: `Tip: adding an “old price” to ${noOffer.length} package${noOffer.length > 1 ? 's' : ''} shows a saving on the card, which tends to lift clicks.`, act: ['packages', noOffer[0].id], cls: 'info' });
+    if (!tips.length) tips.push({ t: 'Everything looks great — your website content is complete and up to date.', cls: 'ok' });
+
+    const hour = new Date().getHours();
+    $('#view').innerHTML = `
+    <div class="top"><div><h1>${hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'} 👋</h1><p>Here's how your website looks today. Changes go live instantly.</p></div>
+      <div style="display:flex;gap:8px"><a class="btn btn-ghost" href="/" target="_blank">View website ↗</a><button class="btn btn-primary" data-q="packages" data-add>+ New package</button></div></div>
+    <div class="dash">
+      <div class="card kpi c3"><span class="ic">${ICON.box}</span><span class="lbl">Live packages</span><b>${live.length}</b><span class="sub">${P.filter(p => p.featured && p.active).length} featured · ${P.length - live.length} hidden</span>${spark(live.map(p => p.price))}</div>
+      <div class="card kpi c3 pk"><span class="ic">${ICON.tag}</span><span class="lbl">Avg. package price</span><b>${avg.toFixed(0)} <small style="font-size:.9rem;color:var(--muted)">${esc(cur)}</small></b><span class="sub">from ${min(live).toFixed(3)} ${esc(cur)}</span>${spark(live.map(p => p.price).sort((a, b) => a - b))}</div>
+      <div class="card kpi c3 cy"><span class="ic">${ICON.plane}</span><span class="lbl">Flight deals</span><b>${fl.length}</b><span class="sub">cheapest ${min(fl).toFixed(3)} ${esc(cur)}</span>${spark(fl.map(d => d.price))}</div>
+      <div class="card kpi c3 nv"><span class="ic">${ICON.bed}</span><span class="lbl">Hotel deals</span><b>${ht.length}</b><span class="sub">from ${min(ht).toFixed(3)} ${esc(cur)} / night</span>${spark(ht.map(d => d.price))}</div>
+
+      <div class="card assist c7"><div class="ai-head"><div class="ai-orb"></div><div><h3>Jumbo Assist</h3><span class="sub">Smart suggestions to keep your website at its best</span></div></div><div id="tips"></div></div>
+      <div class="card health c5"><div class="ch"><div><h3>Content health</h3><span class="sub">How complete your website content is</span></div></div>
+        <b><span id="score">0</span>%</b><div class="grad-bar"><i style="--w:${score}%"></i></div><div class="scale"><span>Needs work</span><span>Excellent</span></div>
+        <ul>${checks.map(([ok, l]) => `<li class="${ok ? '' : 'no'}"><i>${ok ? '✓' : '!'}</i>${l}</li>`).join('')}</ul></div>
+
+      <div class="card c7"><div class="ch"><div><h3>Package prices</h3><span class="sub">Starting price per person (${esc(cur)})</span></div><button class="btn btn-ghost btn-sm" data-q="packages">Manage</button></div>
+        <div class="bars">${live.slice().sort((a, b) => b.price - a.price).map(p => `<div class="bar"><span title="${esc(p.title)}">${esc(p.title)}</span><div class="track"><i style="--w:${(p.price / Math.max(...live.map(x => x.price), 1) * 100).toFixed(1)}%"></i></div><em>${p.price.toFixed(3)}</em></div>`).join('') || '<p class="sub">No packages yet.</p>'}</div></div>
+      <div class="card c5"><div class="ch"><div><h3>Flight deals</h3><span class="sub">Fare from Kuwait (${esc(cur)})</span></div><button class="btn btn-ghost btn-sm" data-q="deals">Update</button></div>
+        <div class="cols">${fl.map(d => `<div class="col ${d.price === min(fl) ? 'hi' : ''}" title="${esc(d.title)}: ${d.price.toFixed(3)}"><i style="--h:${(d.price / Math.max(...fl.map(x => x.price), 1) * 100).toFixed(0)}%"></i><small>${esc(d.title)}</small></div>`).join('')}</div></div>
+
+      <div class="card c7"><div class="ch"><div><h3>Live website</h3><span class="live">Online</span></div><a class="btn btn-ghost btn-sm" href="/" target="_blank">Open ↗</a></div><div class="preview" id="preview"><iframe src="/" title="Website preview" loading="lazy" tabindex="-1"></iframe></div></div>
+      <div class="card c5"><div class="ch"><h3>Recent changes</h3></div><div class="feed">
+        ${[...P, ...D].filter(x => x.updatedAt).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 6).map(x => `<div><span>${esc(x.title)}</span><span class="sub">${ago(x.updatedAt)}</span></div>`).join('') || '<p class="sub">No edits yet — your changes will show up here.</p>'}
+      </div></div>
+    </div>`;
+    // animate
+    requestAnimationFrame(() => setTimeout(() => {
+      $$('.grad-bar i,.bar .track i').forEach(i => i.style.width = i.style.getPropertyValue('--w'));
+      $$('.cols .col i').forEach(i => i.style.height = i.style.getPropertyValue('--h'));
+    }, 80));
+    let n = 0; const sc = $('#score'); const t = setInterval(() => { n = Math.min(score, n + 2); sc.textContent = n; if (n >= score) clearInterval(t); }, 18);
+    const fit = () => { const p = $('#preview'); if (p) p.firstElementChild.style.transform = `scale(${p.clientWidth / 1440})`; }; fit(); addEventListener('resize', fit);
+    // typewriter tips
+    const box = $('#tips'); let i = 0;
+    const next = () => { if (i >= tips.length || !document.body.contains(box)) return; const tp = tips[i++];
+      const el = document.createElement('div'); el.className = 'tip ' + (tp.cls || ''); el.innerHTML = `<span class="dot"></span><p class="typing"></p>${tp.act ? '<button class="btn btn-ghost btn-sm">Fix</button>' : ''}`; box.append(el);
+      if (tp.act) $('button', el).onclick = () => { go(tp.act[0]); if (tp.act[1]) setTimeout(() => $(`.item[data-id="${tp.act[1]}"] [data-edit]`)?.click(), 50); };
+      const p = $('p', el), txt = tp.t.replace(/<[^>]+>/g, ''); let k = 0; const w = setInterval(() => { k += 3; p.textContent = txt.slice(0, k); if (k >= txt.length) { clearInterval(w); p.classList.remove('typing'); p.innerHTML = tp.t; setTimeout(next, 150); } }, 14); };
+    setTimeout(next, 400);
+    $$('[data-q]').forEach(b => b.onclick = () => { go(b.dataset.q); if (b.hasAttribute('data-add')) $('#add').click(); });
   },
 
   packages() {
@@ -173,6 +235,8 @@ const VIEWS = {
         const imgs = [...(p.images || [])];
         const d = drawer(p.id ? 'Edit package' : 'New package', `
           <div><label>Photos <span class="hint">— first photo is the cover. Hover a photo to reorder or remove it.</span></label><div class="imgs" id="imgs"></div></div>
+          <div class="ai-box"><div class="row"><button type="button" class="btn ai-btn btn-sm" id="ai-go">✨ Write with AI</button><span class="hint" id="ai-msg">Fill in the name and destination, then let AI draft the summary, description and inclusions. You can edit everything before saving.</span></div>
+            <div class="row"><input type="text" id="ai-notes" placeholder="Optional notes for AI, e.g. “honeymoon, 5★ resort, private transfers”" style="flex:1;min-width:200px"><select id="ai-tone" style="width:auto"><option value="premium">Premium</option><option value="family-friendly">Family</option><option value="romantic">Romantic</option><option value="adventurous">Adventure</option></select></div></div>
           <div class="fields">
             <div class="full"><label>Package name *</label><input type="text" name="title" value="${esc(p.title)}" required maxlength="120" placeholder="e.g. Dubai City Escape"></div>
             <div><label>Destination</label><input type="text" name="destination" value="${esc(p.destination)}" placeholder="e.g. Dubai, UAE"></div>
@@ -192,6 +256,17 @@ const VIEWS = {
             await saveItem('packages', p, { title: val(f, 'title'), destination: val(f, 'destination'), duration: val(f, 'duration'), price: val(f, 'price'), oldPrice: val(f, 'oldPrice'), badge: val(f, 'badge'), summary: val(f, 'summary'), description: val(f, 'description'), inclusions: val(f, 'inclusions'), images: imgs, active: val(f, 'active'), featured: val(f, 'featured') });
           }, p.id && (() => deleteItem('packages', p)));
         imageManager($('#imgs', d), imgs);
+        $('#ai-go', d).onclick = async () => {
+          const f = $('form', d), btn = $('#ai-go', d), msg = $('#ai-msg', d);
+          btn.disabled = true; btn.textContent = '✨ Writing…'; msg.textContent = 'Drafting copy for your package…';
+          try {
+            const r = await api('ai/write', { method: 'POST', body: { title: val(f, 'title'), destination: val(f, 'destination'), duration: val(f, 'duration'), price: val(f, 'price'), inclusions: val(f, 'inclusions'), notes: $('#ai-notes', d).value, tone: $('#ai-tone', d).value } });
+            const put = (n, v) => { if (!v) return; const el = f.elements[n]; el.value = v; el.classList.remove('glow'); void el.offsetWidth; el.classList.add('glow'); };
+            put('summary', r.summary); put('description', r.description); put('inclusions', (r.inclusions || []).join('\n')); if (!val(f, 'badge')) put('badge', r.badge);
+            msg.textContent = 'Done — review the highlighted fields, then save.';
+          } catch (e) { msg.textContent = e.message; }
+          finally { btn.disabled = false; btn.textContent = '✨ Write with AI'; }
+        };
       },
     });
   },

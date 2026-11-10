@@ -73,7 +73,7 @@ function footer(site) {
 }
 
 const pkgCard = (p, cur) => `
-  <a class="pkg" href="/packages/${esc(p.slug)}">
+  <a class="pkg tilt" href="/packages/${esc(p.slug)}">
     <div class="media">${p.images[0] ? `<img src="${esc(p.images[0])}" alt="${esc(p.title)}" loading="lazy">` : ''}
       ${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ''}${p.duration ? `<span class="dur">${esc(p.duration)}</span>` : ''}</div>
     <div class="body">
@@ -128,6 +128,7 @@ function renderHome(c) {
 
 function renderPackages(c) {
   const grid = $('#pkg-grid'), q = $('#q');
+  q.value = new URLSearchParams(location.search).get('q') || '';
   const draw = () => {
     const t = q.value.toLowerCase().trim();
     const list = c.packages.filter(p => !t || [p.title, p.destination, p.summary].join(' ').toLowerCase().includes(t));
@@ -182,6 +183,7 @@ async function renderPackage(c) {
   if (page === 'packages') renderPackages(CONTENT);
   if (page === 'package') await renderPackage(CONTENT);
 
+  document.dispatchEvent(new CustomEvent('jt:content', { detail: CONTENT }));
   const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .12 });
   $$('.reveal,.stagger').forEach(el => io.observe(el));
 })();
