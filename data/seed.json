@@ -1,0 +1,384 @@
+{
+  "site": {
+    "heroTitle": "Ridiculous travel deals",
+    "heroHighlight": "you can't find anywhere else",
+    "heroSubtitle": "Flights, hotels and handpicked holiday packages from Kuwait — backed by more than 50 years of trusted travel service.",
+    "phone": "+965 22284697",
+    "email": "hello@jumbotravels.com",
+    "whatsapp": "",
+    "address": "Kuwait",
+    "currency": "KWD",
+    "aboutText": "Jumbo Travel is a brand of trust, offering travel services for more than 50 years with efficiency, courtesy and credibility.",
+    "social": {
+      "facebook": "",
+      "instagram": "",
+      "x": ""
+    },
+    "bookingEngine": "https://www.jumbotravels.com/en"
+  },
+  "slides": [
+    {
+      "id": "1c5cea63caea",
+      "image": "/img/hero/slide1.jpg",
+      "title": "",
+      "subtitle": "",
+      "active": true
+    },
+    {
+      "id": "414185991a80",
+      "image": "/img/hero/slide2.jpg",
+      "title": "",
+      "subtitle": "",
+      "active": true
+    },
+    {
+      "id": "cf64605f5eba",
+      "image": "/img/hero/slide3.jpg",
+      "title": "",
+      "subtitle": "",
+      "active": true
+    },
+    {
+      "id": "02802d4458e5",
+      "image": "/img/hero/slide4.jpg",
+      "title": "",
+      "subtitle": "",
+      "active": true
+    },
+    {
+      "id": "0895801edd7f",
+      "image": "/img/hero/slide5.jpg",
+      "title": "",
+      "subtitle": "",
+      "active": true
+    },
+    {
+      "id": "6e92e1980ec8",
+      "image": "/img/hero/slide6.jpg",
+      "title": "",
+      "subtitle": "",
+      "active": true
+    }
+  ],
+  "packages": [
+    {
+      "id": "752f09cbe63a",
+      "slug": "disneyland-paris-magic",
+      "title": "Disneyland Paris Magic",
+      "destination": "Paris, France",
+      "duration": "4 Days / 3 Nights",
+      "price": 289.0,
+      "oldPrice": 0,
+      "badge": "Family favourite",
+      "summary": "Park tickets and a Disney hotel stay for the whole family.",
+      "description": "Step into the magic with a family break at Disneyland Paris. Your package includes park tickets for both Disneyland Park and Walt Disney Studios Park, a stay at a Disney hotel, and plenty of time for parades, rides and the nightly fireworks.",
+      "inclusions": [
+        "Return flights from Kuwait",
+        "3 nights Disney hotel",
+        "2-park tickets",
+        "Daily breakfast",
+        "Airport transfers"
+      ],
+      "images": [
+        "/img/packages/disneyland-paris.png",
+        "/img/deals/paris.jpg"
+      ],
+      "featured": true,
+      "active": true
+    },
+    {
+      "id": "564dc3574eab",
+      "slug": "dubai-city-escape",
+      "title": "Dubai City Escape",
+      "destination": "Dubai, UAE",
+      "duration": "4 Days / 3 Nights",
+      "price": 145.5,
+      "oldPrice": 169.0,
+      "badge": "Best seller",
+      "summary": "Skyline views, desert safari and Dubai Mall shopping.",
+      "description": "A short, easy getaway to Dubai. Spend your days between Downtown, the Marina and the old souks, then head out for an evening desert safari with dinner under the stars.",
+      "inclusions": [
+        "Return flights from Kuwait",
+        "3 nights 4★ hotel",
+        "Desert safari with BBQ dinner",
+        "Daily breakfast",
+        "Airport transfers"
+      ],
+      "images": [
+        "/img/deals/dubai.jpg",
+        "/img/deals/dubai-hoteldeals.jpg"
+      ],
+      "featured": true,
+      "active": true
+    },
+    {
+      "id": "17201fd92862",
+      "slug": "istanbul-heritage-tour",
+      "title": "Istanbul Heritage Tour",
+      "destination": "Istanbul, Türkiye",
+      "duration": "5 Days / 4 Nights",
+      "price": 198.0,
+      "oldPrice": 0,
+      "badge": "",
+      "summary": "Two continents, Bosphorus cruise and the Grand Bazaar.",
+      "description": "Explore Hagia Sophia, the Blue Mosque and Topkapı Palace, cruise the Bosphorus between Europe and Asia, and lose yourself in the Grand Bazaar.",
+      "inclusions": [
+        "Return flights from Kuwait",
+        "4 nights hotel in Sultanahmet",
+        "Bosphorus cruise",
+        "Half-day city tour",
+        "Airport transfers"
+      ],
+      "images": [
+        "/img/deals/istanbul.jpg",
+        "/img/deals/istanbul-hoteldeals.jpg"
+      ],
+      "featured": true,
+      "active": true
+    },
+    {
+      "id": "58604a67a054",
+      "slug": "london-classic",
+      "title": "London Classic",
+      "destination": "London, UK",
+      "duration": "6 Days / 5 Nights",
+      "price": 389.0,
+      "oldPrice": 0,
+      "badge": "",
+      "summary": "Theatre, museums and royal landmarks.",
+      "description": "See Buckingham Palace, the Tower of London and the West End. Includes a hop-on hop-off bus pass so you can explore at your own pace.",
+      "inclusions": [
+        "Return flights from Kuwait",
+        "5 nights central hotel",
+        "Hop-on hop-off bus pass",
+        "Daily breakfast"
+      ],
+      "images": [
+        "/img/deals/london.jpg",
+        "/img/deals/london-hoteldeals.jpg"
+      ],
+      "featured": false,
+      "active": true
+    },
+    {
+      "id": "b9832f9338dc",
+      "slug": "cairo-and-the-pyramids",
+      "title": "Cairo & the Pyramids",
+      "destination": "Cairo, Egypt",
+      "duration": "4 Days / 3 Nights",
+      "price": 159.0,
+      "oldPrice": 0,
+      "badge": "",
+      "summary": "Pyramids of Giza, the Egyptian Museum and a Nile dinner cruise.",
+      "description": "Stand in front of the Great Pyramids and the Sphinx, explore thousands of years of history at the Egyptian Museum and end the day on a Nile dinner cruise.",
+      "inclusions": [
+        "Return flights from Kuwait",
+        "3 nights Nile-view hotel",
+        "Guided Giza tour",
+        "Nile dinner cruise",
+        "Airport transfers"
+      ],
+      "images": [
+        "/img/deals/cairo.jpg",
+        "/img/deals/cairo-hoteldeals.jpg"
+      ],
+      "featured": false,
+      "active": true
+    },
+    {
+      "id": "4ab227980d31",
+      "slug": "geneva-and-the-alps",
+      "title": "Geneva & the Alps",
+      "destination": "Geneva, Switzerland",
+      "duration": "5 Days / 4 Nights",
+      "price": 425.0,
+      "oldPrice": 0,
+      "badge": "New",
+      "summary": "Lakeside strolls and a day trip into the Alps.",
+      "description": "Enjoy Lake Geneva and the Old Town, then take a scenic day trip to Chamonix and Mont Blanc.",
+      "inclusions": [
+        "Return flights from Kuwait",
+        "4 nights lakeside hotel",
+        "Chamonix day trip",
+        "Daily breakfast"
+      ],
+      "images": [
+        "/img/deals/geneva.jpg"
+      ],
+      "featured": false,
+      "active": true
+    }
+  ],
+  "deals": [
+    {
+      "id": "6f71266b9159",
+      "type": "flight",
+      "title": "Dubai",
+      "location": "From Kuwait",
+      "price": 78.9,
+      "note": "Refundable with charge",
+      "image": "/img/deals/dubai.jpg",
+      "active": true
+    },
+    {
+      "id": "d578d25acecd",
+      "type": "flight",
+      "title": "London",
+      "location": "From Kuwait",
+      "price": 230.9,
+      "note": "Non refundable",
+      "image": "/img/deals/london.jpg",
+      "active": true
+    },
+    {
+      "id": "e50b4210a8f6",
+      "type": "flight",
+      "title": "Paris",
+      "location": "From Kuwait",
+      "price": 128.35,
+      "note": "Refundable with charge",
+      "image": "/img/deals/paris.jpg",
+      "active": true
+    },
+    {
+      "id": "07f13c4142a7",
+      "type": "flight",
+      "title": "Istanbul",
+      "location": "From Kuwait",
+      "price": 112.0,
+      "note": "Refundable with charge",
+      "image": "/img/deals/istanbul.jpg",
+      "active": true
+    },
+    {
+      "id": "36515efddbae",
+      "type": "flight",
+      "title": "Cairo",
+      "location": "From Kuwait",
+      "price": 133.85,
+      "note": "Refundable with charge",
+      "image": "/img/deals/cairo.jpg",
+      "active": true
+    },
+    {
+      "id": "d3ee41294e7f",
+      "type": "flight",
+      "title": "Manila",
+      "location": "From Kuwait",
+      "price": 305.95,
+      "note": "Refundable with charge",
+      "image": "/img/deals/manila.jpg",
+      "active": true
+    },
+    {
+      "id": "fb9ad83dd704",
+      "type": "flight",
+      "title": "Mumbai",
+      "location": "From Kuwait",
+      "price": 141.4,
+      "note": "Refundable with charge",
+      "image": "/img/deals/bombay.jpg",
+      "active": true
+    },
+    {
+      "id": "57a7db9cea18",
+      "type": "flight",
+      "title": "Delhi",
+      "location": "From Kuwait",
+      "price": 185.6,
+      "note": "Refundable with charge",
+      "image": "/img/deals/delhi.jpg",
+      "active": true
+    },
+    {
+      "id": "2cd6a051603a",
+      "type": "flight",
+      "title": "Geneva",
+      "location": "From Kuwait",
+      "price": 153.95,
+      "note": "Refundable with charge",
+      "image": "/img/deals/geneva.jpg",
+      "active": true
+    },
+    {
+      "id": "388eeb9a2884",
+      "type": "hotel",
+      "title": "Crowne Plaza Deira",
+      "location": "Dubai, UAE",
+      "price": 30.573,
+      "note": "per night",
+      "image": "/img/deals/dubai-hoteldeals.jpg",
+      "active": true
+    },
+    {
+      "id": "57478e42149f",
+      "type": "hotel",
+      "title": "Pullman Paris La Défense",
+      "location": "Paris, France",
+      "price": 64.356,
+      "note": "per night",
+      "image": "/img/deals/paris-hoteldeals.jpg",
+      "active": true
+    },
+    {
+      "id": "6e9319ea0694",
+      "type": "hotel",
+      "title": "Orange Airport Hotel",
+      "location": "Istanbul, Türkiye",
+      "price": 9.193,
+      "note": "per night",
+      "image": "/img/deals/istanbul-hoteldeals.jpg",
+      "active": true
+    },
+    {
+      "id": "a7213bba8d42",
+      "type": "hotel",
+      "title": "Rehana Resort Cairo",
+      "location": "Cairo, Egypt",
+      "price": 23.701,
+      "note": "per night",
+      "image": "/img/deals/cairo-hoteldeals.jpg",
+      "active": true
+    },
+    {
+      "id": "0c85795f8dd8",
+      "type": "hotel",
+      "title": "Renaissance New York Times Square",
+      "location": "New York, USA",
+      "price": 134.091,
+      "note": "per night",
+      "image": "/img/deals/ny-hoteldeals.jpg",
+      "active": true
+    },
+    {
+      "id": "107c80db596b",
+      "type": "hotel",
+      "title": "Shaza Riyadh Hotel",
+      "location": "Riyadh, Saudi Arabia",
+      "price": 49.473,
+      "note": "per night",
+      "image": "/img/deals/riyadh-hoteldeals.jpg",
+      "active": true
+    },
+    {
+      "id": "cb54712c4a4e",
+      "type": "hotel",
+      "title": "Gran Hotel La Florida",
+      "location": "Barcelona, Spain",
+      "price": 67.694,
+      "note": "per night",
+      "image": "/img/deals/barcelon-hoteldeals.jpg",
+      "active": true
+    },
+    {
+      "id": "49adca87249f",
+      "type": "hotel",
+      "title": "Grand Hotel Amrâth Amsterdam",
+      "location": "Amsterdam, Netherlands",
+      "price": 65.18,
+      "note": "per night",
+      "image": "/img/deals/ams-hoteldeals.jpg",
+      "active": true
+    }
+  ]
+}

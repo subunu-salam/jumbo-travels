@@ -1,0 +1,9 @@
+{
+  "name": "jumbo-travels",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Jumbo Travel website revamp with admin content portal",
+  "main": "server.js",
+  "scripts": { "start": "node server.js", "dev": "node --watch server.js" },
+  "engines": { "node": ">=18" }
+}
