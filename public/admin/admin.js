@@ -5,6 +5,11 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 let DATA = null, VIEW = 'dashboard';
 
 async function api(path, opts = {}) {
+  const w = opts.method && opts.method !== 'GET', sy = document.getElementById('sync');
+  if (w && sy) { sy.classList.add('busy'); sy.lastChild.textContent = 'Saving…'; }
+  try { return await api0(path, opts); } finally { if (w && sy) { sy.classList.remove('busy'); sy.lastChild.textContent = 'All changes live'; } }
+}
+async function api0(path, opts = {}) {
   const r = await fetch('/api/admin/' + path, { method: opts.method || 'GET', headers: { 'Content-Type': 'application/json' }, body: opts.body ? JSON.stringify(opts.body) : undefined, credentials: 'same-origin' });
   const j = await r.json().catch(() => ({}));
   if (r.status === 401 && path !== 'login') { showLogin(); throw new Error('Session expired, please sign in again'); }
@@ -50,18 +55,33 @@ function dropZone(el, onFiles) {
 
 // ---------- shell ----------
 const NAV = [
-  ['dashboard', 'Dashboard', '<path d="M3 13h8V3H3zm0 8h8v-6H3zm10 0h8V11h-8zm0-18v6h8V3z" fill="currentColor"/>'],
-  ['packages', 'Packages', '<path d="M20 6h-4V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM10 4h4v2h-4z" fill="currentColor"/>'],
-  ['deals', 'Flight & hotel deals', '<path d="M21.4 11.6l-9-9A2 2 0 0 0 11 2H4a2 2 0 0 0-2 2v7c0 .6.2 1.1.6 1.4l9 9a2 2 0 0 0 2.8 0l7-7a2 2 0 0 0 0-2.8zM6.5 8a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" fill="currentColor"/>'],
-  ['slides', 'Homepage banners', '<path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5z" fill="currentColor"/>'],
-  ['site', 'Website text & contact', '<path d="M3 17.2V21h3.8l11-11-3.8-3.8zM20.7 7a1 1 0 0 0 0-1.4l-2.3-2.3a1 1 0 0 0-1.4 0l-1.8 1.8 3.8 3.8z" fill="currentColor"/>'],
+  ['dashboard', 'Overview', 'Insights & health', '<path d="M3 13h8V3H3zm0 8h8v-6H3zm10 0h8V11h-8zm0-18v6h8V3z" fill="currentColor"/>'],
+  ['packages', 'Packages', 'Holidays & pricing', '<path d="M20 6h-4V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM10 4h4v2h-4z" fill="currentColor"/>'],
+  ['deals', 'Deals', 'Flight & hotel offers', '<path d="M21.4 11.6l-9-9A2 2 0 0 0 11 2H4a2 2 0 0 0-2 2v7c0 .6.2 1.1.6 1.4l9 9a2 2 0 0 0 2.8 0l7-7a2 2 0 0 0 0-2.8zM6.5 8a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" fill="currentColor"/>'],
+  ['slides', 'Banners', 'Homepage hero photos', '<path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5z" fill="currentColor"/>'],
+  ['site', 'Website', 'Text, contact & social', '<path d="M3 17.2V21h3.8l11-11-3.8-3.8zM20.7 7a1 1 0 0 0 0-1.4l-2.3-2.3a1 1 0 0 0-1.4 0l-1.8 1.8 3.8 3.8z" fill="currentColor"/>'],
 ];
+const COUNT = { packages: () => DATA.packages.length, deals: () => DATA.deals.length, slides: () => DATA.slides.length };
 function nav() {
-  $('#side-nav').innerHTML = NAV.map(([k, l, ic]) => `<button data-v="${k}" class="${VIEW === k ? 'on' : ''}"><svg viewBox="0 0 24 24">${ic}</svg>${l}</button>`).join('');
-  $('#mobile-nav').innerHTML = NAV.map(([k, l]) => `<button data-v="${k}" class="${VIEW === k ? 'on' : ''}">${l}</button>`).join('') + '<button onclick="window.open(\'/\')">View site</button>';
-  $$('[data-v]').forEach(b => b.onclick = () => go(b.dataset.v));
+  const box = $('#side-nav');
+  box.innerHTML = '<span class="indicator" id="indicator"></span>' + NAV.map(([k, l, sub, ic]) => `<button data-v="${k}" class="${VIEW === k ? 'on' : ''}" title="${l}"><span class="nav-ic"><svg viewBox="0 0 24 24">${ic}</svg></span><span class="nav-t"><b>${l}</b><small>${sub}</small></span>${COUNT[k] ? `<span class="nav-c">${COUNT[k]()}</span>` : '<span></span>'}</button>`).join('');
+  $$('[data-v]', box).forEach(b => b.onclick = () => { go(b.dataset.v); $('#app').classList.remove('open'); });
+  moveIndicator();
+  $('#crumb').textContent = NAV.find(n => n[0] === VIEW)?.[1] || '';
 }
-function go(v) { VIEW = v; history.replaceState(null, '', '#' + v); nav(); VIEWS[v](); scrollTo(0, 0); }
+function moveIndicator() {
+  const on = $('#side-nav button.on'), ind = $('#indicator'); if (!on || !ind) return;
+  ind.style.transform = `translateY(${on.offsetTop}px)`; ind.style.height = on.offsetHeight + 'px'; ind.style.opacity = 1;
+}
+let lastIndicatorTop = 0;
+function go(v) {
+  const prev = $('#side-nav button.on'); lastIndicatorTop = prev ? prev.offsetTop : 0;
+  VIEW = v; history.replaceState(null, '', '#' + v);
+  const ind = $('#indicator'); nav();
+  const ind2 = $('#indicator'); if (ind2) { ind2.style.transition = 'none'; ind2.style.transform = `translateY(${lastIndicatorTop}px)`; ind2.offsetWidth; ind2.style.transition = ''; moveIndicator(); }
+  VIEWS[v](); scrollTo({ top: 0, behavior: 'smooth' });
+}
+function openItem(coll, id) { go(coll); if (id) setTimeout(() => $(`.item[data-id="${id}"] [data-edit]`)?.click(), 60); }
 async function refresh() { DATA = await api('content'); }
 
 function showLogin() { $('#app').classList.add('hidden'); $('#login').classList.remove('hidden'); $('#u').focus(); }
@@ -77,6 +97,7 @@ $('#logout').onclick = async () => { await fetch('/api/admin/logout', { method: 
 async function start() {
   try { await refresh(); } catch { return showLogin(); }
   $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
+  try { if (localStorage.getItem('jt-mini') === '1') $('#app').classList.add('mini'); } catch {}
   go(NAV.some(n => n[0] === location.hash.slice(1)) ? location.hash.slice(1) : 'dashboard');
 }
 
@@ -129,7 +150,8 @@ function listView({ coll, title, sub, addLabel, filterFn, row, edit, blank }) {
     $('#list').innerHTML = list.map(x => `<div class="item" data-id="${x.id}">
       <div class="move">${q ? '' : '<button data-up title="Move up">▲</button><button data-down title="Move down">▼</button>'}</div>${row(x)}
       <div class="actions"><button class="btn btn-ghost btn-sm" data-edit>Edit</button></div></div>`).join('') || `<div class="card empty">Nothing here yet. Click “${addLabel}” to create one.</div>`;
-    $$('[data-edit]').forEach(b => b.onclick = () => edit(items.find(x => x.id === b.closest('.item').dataset.id)));
+    $$('[data-edit]').forEach(b => b.onclick = e => { e.stopPropagation(); edit(items.find(x => x.id === b.closest('.item').dataset.id)); });
+    $$('.item').forEach(r => r.onclick = e => { if (!e.target.closest('button')) $('[data-edit]', r).click(); });
     $$('[data-up],[data-down]').forEach(b => b.onclick = async () => {
       const i = items.findIndex(x => x.id === b.closest('.item').dataset.id), j = i + (b.hasAttribute('data-up') ? -1 : 1);
       if (j < 0 || j >= items.length) return;
@@ -182,31 +204,31 @@ const VIEWS = {
     if (stale.length) tips.push({ t: `${stale.length} deal prices haven't been checked in 2+ weeks. Fresh prices build trust.`, act: ['deals'], cls: 'info' });
     const noOffer = live.filter(p => !p.oldPrice);
     if (noOffer.length && live.length) tips.push({ t: `Tip: adding an “old price” to ${noOffer.length} package${noOffer.length > 1 ? 's' : ''} shows a saving on the card, which tends to lift clicks.`, act: ['packages', noOffer[0].id], cls: 'info' });
-    if (!tips.length) tips.push({ t: 'Everything looks great — your website content is complete and up to date.', cls: 'ok' });
+    if (!tips.length) tips.push({ t: 'Everything looks great. Your website content is complete and up to date.', cls: 'ok' });
 
     const hour = new Date().getHours();
     $('#view').innerHTML = `
-    <div class="top"><div><h1>${hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'} 👋</h1><p>Here's how your website looks today. Changes go live instantly.</p></div>
-      <div style="display:flex;gap:8px"><a class="btn btn-ghost" href="/" target="_blank">View website ↗</a><button class="btn btn-primary" data-q="packages" data-add>+ New package</button></div></div>
     <div class="dash">
-      <div class="card kpi c3"><span class="ic">${ICON.box}</span><span class="lbl">Live packages</span><b>${live.length}</b><span class="sub">${P.filter(p => p.featured && p.active).length} featured · ${P.length - live.length} hidden</span>${spark(live.map(p => p.price))}</div>
-      <div class="card kpi c3 pk"><span class="ic">${ICON.tag}</span><span class="lbl">Avg. package price</span><b>${avg.toFixed(0)} <small style="font-size:.9rem;color:var(--muted)">${esc(cur)}</small></b><span class="sub">from ${min(live).toFixed(3)} ${esc(cur)}</span>${spark(live.map(p => p.price).sort((a, b) => a - b))}</div>
-      <div class="card kpi c3 cy"><span class="ic">${ICON.plane}</span><span class="lbl">Flight deals</span><b>${fl.length}</b><span class="sub">cheapest ${min(fl).toFixed(3)} ${esc(cur)}</span>${spark(fl.map(d => d.price))}</div>
-      <div class="card kpi c3 nv"><span class="ic">${ICON.bed}</span><span class="lbl">Hotel deals</span><b>${ht.length}</b><span class="sub">from ${min(ht).toFixed(3)} ${esc(cur)} / night</span>${spark(ht.map(d => d.price))}</div>
+      <div class="welcome card"><span class="globe"><img src="/img/logo-globe.png" alt=""></span><div><h2>${hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'}, <em>welcome back</em></h2><p>Your website is live. Content health is at ${score}% — ${tips.filter(t => !t.cls).length ? `${tips.filter(t => !t.cls).length} quick fix${tips.filter(t => !t.cls).length > 1 ? 'es' : ''} will take it higher.` : 'everything is in great shape.'}</p></div>
+        <div class="w-actions"><a class="btn btn-ghost" href="/" target="_blank">View website</a><button class="btn btn-primary" data-q="packages" data-add>New package</button></div></div>
+      <div class="card kpi c3 click" data-q="packages"><span class="go">Open packages →</span><span class="ic">${ICON.box}</span><span class="lbl">Live packages</span><b>${live.length}</b><span class="sub">${P.filter(p => p.featured && p.active).length} featured · ${P.length - live.length} hidden</span>${spark(live.map(p => p.price))}</div>
+      <div class="card kpi c3 pk click" data-q="packages"><span class="go">Review prices →</span><span class="ic">${ICON.tag}</span><span class="lbl">Avg. package price</span><b>${avg.toFixed(0)} <small style="font-size:.9rem;color:var(--muted)">${esc(cur)}</small></b><span class="sub">from ${min(live).toFixed(3)} ${esc(cur)}</span>${spark(live.map(p => p.price).sort((a, b) => a - b))}</div>
+      <div class="card kpi c3 cy click" data-q="deals"><span class="go">Update fares →</span><span class="ic">${ICON.plane}</span><span class="lbl">Flight deals</span><b>${fl.length}</b><span class="sub">cheapest ${min(fl).toFixed(3)} ${esc(cur)}</span>${spark(fl.map(d => d.price))}</div>
+      <div class="card kpi c3 nv click" data-q="deals"><span class="go">Update hotels →</span><span class="ic">${ICON.bed}</span><span class="lbl">Hotel deals</span><b>${ht.length}</b><span class="sub">from ${min(ht).toFixed(3)} ${esc(cur)} / night</span>${spark(ht.map(d => d.price))}</div>
 
       <div class="card assist c7"><div class="ai-head"><div class="ai-orb"></div><div><h3>Jumbo Assist</h3><span class="sub">Smart suggestions to keep your website at its best</span></div></div><div id="tips"></div></div>
       <div class="card health c5"><div class="ch"><div><h3>Content health</h3><span class="sub">How complete your website content is</span></div></div>
         <b><span id="score">0</span>%</b><div class="grad-bar"><i style="--w:${score}%"></i></div><div class="scale"><span>Needs work</span><span>Excellent</span></div>
-        <ul>${checks.map(([ok, l]) => `<li class="${ok ? '' : 'no'}"><i>${ok ? '✓' : '!'}</i>${l}</li>`).join('')}</ul></div>
+        <ul>${checks.map(([ok, l, items]) => `<li class="${ok ? '' : 'no'}" data-open="${items[0] ? (P.includes(items[0]) ? 'packages:' + items[0].id : 'deals:' + items[0].id) : (l.includes('WhatsApp') ? 'site:' : l.includes('banner') ? 'slides:' : 'packages:')}"><i>${ok ? '✓' : '!'}</i>${l}</li>`).join('')}</ul></div>
 
       <div class="card c7"><div class="ch"><div><h3>Package prices</h3><span class="sub">Starting price per person (${esc(cur)})</span></div><button class="btn btn-ghost btn-sm" data-q="packages">Manage</button></div>
-        <div class="bars">${live.slice().sort((a, b) => b.price - a.price).map(p => `<div class="bar"><span title="${esc(p.title)}">${esc(p.title)}</span><div class="track"><i style="--w:${(p.price / Math.max(...live.map(x => x.price), 1) * 100).toFixed(1)}%"></i></div><em>${p.price.toFixed(3)}</em></div>`).join('') || '<p class="sub">No packages yet.</p>'}</div></div>
+        <div class="bars">${live.slice().sort((a, b) => b.price - a.price).map(p => `<div class="bar" data-open="packages:${p.id}"><span title="${esc(p.title)}">${esc(p.title)}</span><div class="track"><i style="--w:${(p.price / Math.max(...live.map(x => x.price), 1) * 100).toFixed(1)}%"></i></div><em>${p.price.toFixed(3)}</em></div>`).join('') || '<p class="sub">No packages yet.</p>'}</div></div>
       <div class="card c5"><div class="ch"><div><h3>Flight deals</h3><span class="sub">Fare from Kuwait (${esc(cur)})</span></div><button class="btn btn-ghost btn-sm" data-q="deals">Update</button></div>
-        <div class="cols">${fl.map(d => `<div class="col ${d.price === min(fl) ? 'hi' : ''}" title="${esc(d.title)}: ${d.price.toFixed(3)}"><i style="--h:${(d.price / Math.max(...fl.map(x => x.price), 1) * 100).toFixed(0)}%"></i><small>${esc(d.title)}</small></div>`).join('')}</div></div>
+        <div class="cols">${fl.map(d => `<div class="col ${d.price === min(fl) ? 'hi' : ''}" data-open="deals:${d.id}" title="${esc(d.title)}: ${d.price.toFixed(3)}"><i style="--h:${(d.price / Math.max(...fl.map(x => x.price), 1) * 100).toFixed(0)}%"></i><small>${esc(d.title)}</small></div>`).join('')}</div></div>
 
-      <div class="card c7"><div class="ch"><div><h3>Live website</h3><span class="live">Online</span></div><a class="btn btn-ghost btn-sm" href="/" target="_blank">Open ↗</a></div><div class="preview" id="preview"><iframe src="/" title="Website preview" loading="lazy" tabindex="-1"></iframe></div></div>
+      <div class="card c7"><div class="ch"><div><h3>Live website</h3><span class="live">Online</span></div><a class="btn btn-ghost btn-sm" href="/" target="_blank">Open</a></div><div class="preview" id="preview"><iframe src="/" title="Website preview" loading="lazy" tabindex="-1"></iframe></div></div>
       <div class="card c5"><div class="ch"><h3>Recent changes</h3></div><div class="feed">
-        ${[...P, ...D].filter(x => x.updatedAt).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 6).map(x => `<div><span>${esc(x.title)}</span><span class="sub">${ago(x.updatedAt)}</span></div>`).join('') || '<p class="sub">No edits yet — your changes will show up here.</p>'}
+        ${[...P, ...D].filter(x => x.updatedAt).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 6).map(x => `<div data-open="${P.includes(x) ? 'packages' : 'deals'}:${x.id}"><span>${esc(x.title)}</span><span class="sub">${ago(x.updatedAt)}</span></div>`).join('') || '<p class="sub">No edits yet — your changes will show up here.</p>'}
       </div></div>
     </div>`;
     // animate
@@ -219,11 +241,13 @@ const VIEWS = {
     // typewriter tips
     const box = $('#tips'); let i = 0;
     const next = () => { if (i >= tips.length || !document.body.contains(box)) return; const tp = tips[i++];
-      const el = document.createElement('div'); el.className = 'tip ' + (tp.cls || ''); el.innerHTML = `<span class="dot"></span><p class="typing"></p>${tp.act ? '<button class="btn btn-ghost btn-sm">Fix</button>' : ''}`; box.append(el);
-      if (tp.act) $('button', el).onclick = () => { go(tp.act[0]); if (tp.act[1]) setTimeout(() => $(`.item[data-id="${tp.act[1]}"] [data-edit]`)?.click(), 50); };
+      const el = document.createElement('div'); el.className = 'tip ' + (tp.cls || ''); el.innerHTML = `<span class="dot"></span><p class="typing"></p>${tp.act ? '<svg class="arrow-r" viewBox="0 0 24 24" width="18" height="18"><path d="M5 11h11.2l-4.6-4.6L13 5l7 7-7 7-1.4-1.4 4.6-4.6H5z" fill="currentColor"/></svg>' : ''}`; box.append(el);
+      if (tp.act) el.onclick = () => openItem(tp.act[0], tp.act[1]);
       const p = $('p', el), txt = tp.t.replace(/<[^>]+>/g, ''); let k = 0; const w = setInterval(() => { k += 3; p.textContent = txt.slice(0, k); if (k >= txt.length) { clearInterval(w); p.classList.remove('typing'); p.innerHTML = tp.t; setTimeout(next, 150); } }, 14); };
     setTimeout(next, 400);
-    $$('[data-q]').forEach(b => b.onclick = () => { go(b.dataset.q); if (b.hasAttribute('data-add')) $('#add').click(); });
+    $$('[data-q]').forEach(b => b.onclick = e => { e.stopPropagation(); go(b.dataset.q); if (b.hasAttribute('data-add')) $('#add').click(); });
+    $$('[data-open]').forEach(el => el.onclick = () => { const [c, id] = el.dataset.open.split(':'); openItem(c, id); });
+    $('#preview').onclick = () => open('/', '_blank');
   },
 
   packages() {
@@ -235,7 +259,7 @@ const VIEWS = {
         const imgs = [...(p.images || [])];
         const d = drawer(p.id ? 'Edit package' : 'New package', `
           <div><label>Photos <span class="hint">— first photo is the cover. Hover a photo to reorder or remove it.</span></label><div class="imgs" id="imgs"></div></div>
-          <div class="ai-box"><div class="row"><button type="button" class="btn ai-btn btn-sm" id="ai-go">✨ Write with AI</button><span class="hint" id="ai-msg">Fill in the name and destination, then let AI draft the summary, description and inclusions. You can edit everything before saving.</span></div>
+          <div class="ai-box"><div class="row"><button type="button" class="btn ai-btn btn-sm" id="ai-go"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2l1.8 5.4L19 9l-5.2 1.6L12 16l-1.8-5.4L5 9l5.2-1.6zM19 14l.9 2.6L22 17l-2.1.7L19 20l-.9-2.3L16 17l2.1-.4z" fill="currentColor"/></svg><span>Write with AI</span></button><span class="hint" id="ai-msg">Fill in the name and destination, then let AI draft the summary, description and inclusions. You can edit everything before saving.</span></div>
             <div class="row"><input type="text" id="ai-notes" placeholder="Optional notes for AI, e.g. “honeymoon, 5★ resort, private transfers”" style="flex:1;min-width:200px"><select id="ai-tone" style="width:auto"><option value="premium">Premium</option><option value="family-friendly">Family</option><option value="romantic">Romantic</option><option value="adventurous">Adventure</option></select></div></div>
           <div class="fields">
             <div class="full"><label>Package name *</label><input type="text" name="title" value="${esc(p.title)}" required maxlength="120" placeholder="e.g. Dubai City Escape"></div>
@@ -258,14 +282,14 @@ const VIEWS = {
         imageManager($('#imgs', d), imgs);
         $('#ai-go', d).onclick = async () => {
           const f = $('form', d), btn = $('#ai-go', d), msg = $('#ai-msg', d);
-          btn.disabled = true; btn.textContent = '✨ Writing…'; msg.textContent = 'Drafting copy for your package…';
+          btn.disabled = true; btn.lastChild.textContent = 'Writing…'; msg.textContent = 'Drafting copy for your package…';
           try {
             const r = await api('ai/write', { method: 'POST', body: { title: val(f, 'title'), destination: val(f, 'destination'), duration: val(f, 'duration'), price: val(f, 'price'), inclusions: val(f, 'inclusions'), notes: $('#ai-notes', d).value, tone: $('#ai-tone', d).value } });
             const put = (n, v) => { if (!v) return; const el = f.elements[n]; el.value = v; el.classList.remove('glow'); void el.offsetWidth; el.classList.add('glow'); };
             put('summary', r.summary); put('description', r.description); put('inclusions', (r.inclusions || []).join('\n')); if (!val(f, 'badge')) put('badge', r.badge);
             msg.textContent = 'Done — review the highlighted fields, then save.';
           } catch (e) { msg.textContent = e.message; }
-          finally { btn.disabled = false; btn.textContent = '✨ Write with AI'; }
+          finally { btn.disabled = false; btn.lastChild.textContent = 'Write with AI'; }
         };
       },
     });
@@ -354,5 +378,41 @@ const VIEWS = {
     };
   },
 };
+
+// ---------- shell interactions ----------
+$('#collapse').onclick = () => { const m = $('#app').classList.toggle('mini'); try { localStorage.setItem('jt-mini', m ? '1' : '0'); } catch {} setTimeout(moveIndicator, 520); };
+$('#burger').onclick = () => $('#app').classList.add('open');
+$('#scrim').onclick = () => $('#app').classList.remove('open');
+addEventListener('resize', () => requestAnimationFrame(moveIndicator));
+
+// ---------- command palette ----------
+const PAL = $('#palette'); let palSel = 0, palItems = [];
+function palOpen() { if (!DATA) return; PAL.classList.remove('hidden'); $('#pal-q').value = ''; palDraw(); setTimeout(() => $('#pal-q').focus(), 20); }
+function palClose() { PAL.classList.add('hidden'); }
+function palDraw() {
+  const t = $('#pal-q').value.toLowerCase().trim();
+  const pages = NAV.map(([k, l, sub, ic]) => ({ g: 'Go to', t: l, s: sub, ic, run: () => go(k) }));
+  const acts = [{ g: 'Actions', t: 'New package', s: 'Create a holiday package', ic: '<path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" fill="currentColor"/>', run: () => { go('packages'); $('#add').click(); } },
+    { g: 'Actions', t: 'New deal', s: 'Add a flight or hotel deal', ic: '<path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" fill="currentColor"/>', run: () => { go('deals'); $('#add').click(); } },
+    { g: 'Actions', t: 'Open website', s: 'View the live site', ic: '<path d="M14 3h7v7h-2V6.4l-9.3 9.3-1.4-1.4L17.6 5H14z" fill="currentColor"/>', run: () => open('/', '_blank') }];
+  const pk = DATA.packages.map(p => ({ g: 'Packages', t: p.title, s: `${p.destination} · ${money(p.price)}`, img: p.images[0], run: () => openItem('packages', p.id) }));
+  const dl = DATA.deals.map(d => ({ g: 'Deals', t: d.title, s: `${d.type === 'flight' ? 'Flight' : 'Hotel'} · ${money(d.price)}`, img: d.image, run: () => openItem('deals', d.id) }));
+  palItems = [...pages, ...acts, ...pk, ...dl].filter(x => !t || (x.t + ' ' + x.s).toLowerCase().includes(t)).slice(0, 40);
+  palSel = Math.min(palSel, Math.max(0, palItems.length - 1));
+  let g = ''; $('#pal-list').innerHTML = palItems.map((x, i) => { const h = x.g !== g ? `<div class="pal-grp">${x.g}</div>` : ''; g = x.g;
+    return h + `<div class="pal-it ${i === palSel ? 'sel' : ''}" data-i="${i}">${x.img ? `<img src="${esc(x.img)}" alt="">` : `<span class="pi"><svg viewBox="0 0 24 24" width="18" height="18">${x.ic}</svg></span>`}<span><b>${esc(x.t)}</b><small>${esc(x.s)}</small></span></div>`; }).join('') || '<div class="pal-empty">No results</div>';
+  $$('.pal-it').forEach(el => { el.onclick = () => { palClose(); palItems[+el.dataset.i].run(); }; el.onmousemove = () => { if (palSel !== +el.dataset.i) { palSel = +el.dataset.i; $$('.pal-it').forEach(x => x.classList.toggle('sel', +x.dataset.i === palSel)); } }; });
+}
+$('#pal-q').oninput = () => { palSel = 0; palDraw(); };
+$('#pal-q').onkeydown = e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); palSel = (palSel + (e.key === 'ArrowDown' ? 1 : -1) + palItems.length) % palItems.length; palDraw(); $('.pal-it.sel')?.scrollIntoView({ block: 'nearest' }); }
+  if (e.key === 'Enter' && palItems[palSel]) { palClose(); palItems[palSel].run(); }
+};
+PAL.onclick = e => { if (e.target === PAL) palClose(); };
+['#open-palette', '#open-palette-2'].forEach(id => $(id).onclick = palOpen);
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); PAL.classList.contains('hidden') ? palOpen() : palClose(); }
+  if (e.key === 'Escape' && !PAL.classList.contains('hidden')) palClose();
+});
 
 start();
