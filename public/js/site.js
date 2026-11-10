@@ -24,14 +24,7 @@ const svg = (name, size = 20) => `<svg viewBox="0 0 24 24" width="${size}" heigh
 const LOGO = `
 <span class="jl" role="img" aria-label="Jumbo Travel">
   <span class="jl-word jl-en"></span>
-  <span class="jl-stage" aria-hidden="true">
-    <span class="jl-3d">
-      <span class="jl-ring jl-ring-back"></span>
-      <span class="jl-sphere"><span class="jl-swirl"></span><span class="jl-swirl jl-swirl-2"></span><span class="jl-shine"></span></span>
-      <span class="jl-ring jl-ring-front"><i class="jl-comet"></i></span>
-    </span>
-    <span class="jl-shadow"></span>
-  </span>
+  <span class="jl-globe" aria-hidden="true"><span class="jl-g"></span><span class="jl-sheen"></span></span>
   <span class="jl-word jl-ar"></span>
 </span>`;
 

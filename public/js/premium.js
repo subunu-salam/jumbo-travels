@@ -35,12 +35,10 @@
       go(t === 'packages' ? `/packages${v ? '?q=' + encodeURIComponent(v) : ''}` : `${BOOK}?searchTab=${t}`);
     };
 
-    // floating cards from real content
-    const feat = c.packages.find(p => p.featured) || c.packages[0];
-    const cheapest = c.deals.filter(d => d.type === 'flight').sort((a, b) => a.price - b.price)[0];
-    if (feat) q('.fc-1').innerHTML = `<img src="${E(feat.images[0])}" alt=""><div class="fc-in"><small>${E(feat.badge || 'Featured package')}</small><h3>${E(feat.title)}</h3><p>${E(feat.duration)} · from ${money(feat.price, cur)}</p><a class="go" href="/packages/${E(feat.slug)}" style="pointer-events:auto">View package ${arrow}</a></div>`;
-    if (cheapest) q('.fc-2').innerHTML = `<div class="fc-in"><small>Flash fare</small><div><p style="margin-bottom:6px">Kuwait → ${E(cheapest.title)}</p><div class="big"><span>${E(cur)}</span>${Number(cheapest.price).toFixed(3)}</div></div><a class="go" href="${BOOK}?searchTab=flight" style="pointer-events:auto">Book flight ${arrow}</a></div>`;
-    q('.hero-float').style.pointerEvents = 'auto';
+
+    // slide counter (syncs with slideshow dots)
+    const n = qa('.hero-slides img').length; q('#h-n').textContent = String(n).padStart(2, '0');
+    new MutationObserver(() => { const i = qa('.hero-dots button').findIndex(b => b.classList.contains('on')); if (i >= 0) q('#h-i').textContent = String(i + 1).padStart(2, '0'); }).observe(q('.hero-dots'), { attributes: true, subtree: true, attributeFilter: ['class'] });
 
     // services
     const S = [['Flights', 'Hundreds of airlines, the best fares from Kuwait.', 'flight', '<path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z" fill="currentColor"/>'],
@@ -60,16 +58,6 @@
     const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .1 });
     qa('.stagger:not(.in),.reveal:not(.in)').forEach(el => io.observe(el));
 
-    // hero parallax (mouse + scroll)
-    if (fine && !still) {
-      const hero = q('.hero-x');
-      hero.addEventListener('mousemove', e => {
-        const r = hero.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
-        qa('[data-depth]', hero).forEach(el => { const d = +el.dataset.depth; el.style.transform = `translate3d(${-x * d}px,${-y * d}px,0) rotateY(${x * d * .4}deg) rotateX(${-y * d * .4}deg)`; });
-      });
-      hero.addEventListener('mouseleave', () => qa('[data-depth]', hero).forEach(el => el.style.transform = ''));
-    }
-    if (!still) addEventListener('scroll', () => { const y = scrollY; if (y < innerHeight) { const s = q('.hero-slides'); if (s) s.style.transform = `translate3d(0,${y * .3}px,0)`; const c = q('.hero-copy'); if (c) { c.style.transform = `translate3d(0,${y * .12}px,0)`; c.style.opacity = 1 - y / (innerHeight * .9); } } }, { passive: true });
   }
 
   function countUp(el) {
@@ -84,23 +72,22 @@
     qa('.tilt').forEach(el => {
       if (el._t) return; el._t = 1;
       const g = document.createElement('span'); g.className = 'glare'; el.append(g);
+      let raf = 0, r;
+      el.addEventListener('mouseenter', () => { r = el.getBoundingClientRect(); el.classList.add('tilting'); });
       el.addEventListener('mousemove', e => {
-        const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-        el.style.transform = `perspective(900px) rotateX(${(.5 - y) * 10}deg) rotateY(${(x - .5) * 12}deg) translateY(-6px)`;
-        el.style.setProperty('--gx', x * 100 + '%'); el.style.setProperty('--gy', y * 100 + '%');
+        if (raf) return; raf = requestAnimationFrame(() => { raf = 0; if (!r) r = el.getBoundingClientRect();
+          const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+          el.style.transform = `perspective(1000px) rotateX(${(.5 - y) * 6}deg) rotateY(${(x - .5) * 7}deg) translateY(-6px)`;
+          el.style.setProperty('--gx', x * 100 + '%'); el.style.setProperty('--gy', y * 100 + '%'); });
       });
-      el.addEventListener('mouseleave', () => el.style.transform = '');
+      el.addEventListener('mouseleave', () => { el.classList.remove('tilting'); el.style.transform = ''; r = null; });
     });
   }
-  new MutationObserver(() => tiltAll()).observe(document.body, { childList: true, subtree: true });
+  // package grid re-renders on search: re-apply tilt after renders
+  document.addEventListener('input', () => setTimeout(tiltAll, 0));
+  // fade images in once loaded (avoids harsh pop-in)
+  const fadeImgs = () => qa('main img:not(.fade)').forEach(i => { if (i.closest('.hero-slides')) return; i.classList.add('fade'); if (i.complete) i.classList.add('ok'); else i.addEventListener('load', () => i.classList.add('ok'), { once: true }); });
+  document.addEventListener('jt:content', () => setTimeout(fadeImgs, 0));
 
-  // smooth page transitions for internal links
-  function go(href) { if (still) return location.href = href; document.body.classList.add('leaving'); setTimeout(() => location.href = href, 300); }
-  document.addEventListener('click', e => {
-    const a = e.target.closest('a'); if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || a.target === '_blank') return;
-    const u = new URL(a.href, location.href);
-    if (u.origin !== location.origin || u.hash && u.pathname === location.pathname || a.hasAttribute('download')) return;
-    e.preventDefault(); go(u.href);
-  });
-  addEventListener('pageshow', e => { if (e.persisted) document.body.classList.remove('leaving'); });
+  function go(href) { location.href = href; }
 })();

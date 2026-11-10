@@ -7,10 +7,11 @@ h2{letter-spacing:-.02em;font-weight:700}
 .section.soft{background:linear-gradient(180deg,#fff 0%,var(--bg) 18%,var(--bg) 82%,#fff 100%)}
 
 /* page transition */
-body{animation:pageIn .7s var(--ease) both}
-body.leaving{animation:pageOut .35s ease forwards}
-@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-@keyframes pageOut{to{opacity:0;transform:translateY(-6px)}}
+@view-transition{navigation:auto}
+::view-transition-old(root){animation:vtOut .28s cubic-bezier(.4,0,1,1) both}
+::view-transition-new(root){animation:vtIn .45s cubic-bezier(0,0,.2,1) both}
+@keyframes vtOut{to{opacity:0}}
+@keyframes vtIn{from{opacity:0}}
 
 /* header: transparent over hero, solid on scroll */
 body[data-page=home] .header:not(.scrolled){background:transparent;backdrop-filter:none;border-color:transparent}
@@ -188,3 +189,49 @@ body[data-page=home] .topbar{position:relative;z-index:51}
 @media (prefers-reduced-motion:reduce){.float-card,.orb,.kicker i{animation:none!important}body{animation:none}}
 .orb{width:96px;height:96px;left:40px;bottom:-10px}
 @media (max-width:560px){.kicker{font-size:.7rem;letter-spacing:.08em;padding:.45rem .8rem}}
+
+
+/* ================= v3 refinements: calmer, smoother, more premium ================= */
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
+/* hero: let the brand artwork breathe, darken only behind the text */
+.hero-x::before{background:
+  linear-gradient(180deg,rgba(12,14,52,.55) 0%,rgba(12,14,52,0) 22%,rgba(12,14,52,0) 70%,rgba(12,14,52,.55) 100%),
+  linear-gradient(90deg,rgba(12,14,52,.92) 0%,rgba(12,14,52,.72) 32%,rgba(12,14,52,.15) 62%,rgba(12,14,52,0) 100%)}
+.hero-x .hero-slides{will-change:auto}
+.hero-x .hero-slides img{object-position:70% center;transform:scale(1.06);transition:opacity 1.8s cubic-bezier(.4,0,.2,1),transform 8s cubic-bezier(.25,.1,.25,1);will-change:opacity,transform}
+.hero-x .hero-slides img.on{transform:scale(1)}
+.hero-grid{grid-template-columns:1fr}
+.hero-copy{max-width:640px}
+.hero-copy h1{font-size:clamp(2.6rem,5.6vw,4.8rem)}
+.hero-copy>*{opacity:0;transform:translateY(24px);animation:rise 1s cubic-bezier(.2,.8,.2,1) forwards}
+.hero-copy>*:nth-child(2){animation-delay:.12s}.hero-copy>*:nth-child(3){animation-delay:.24s}.hero-copy>*:nth-child(4){animation-delay:.36s}.hero-copy>*:nth-child(5){animation-delay:.48s}
+@keyframes rise{to{opacity:1;transform:none}}
+.glass-search{background:rgba(255,255,255,.12);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.hero-meta{display:flex;align-items:center;gap:18px}
+.hero-count{color:#c9cbe8;font-size:.85rem;letter-spacing:.1em;font-variant-numeric:tabular-nums}
+.hero-count b{color:#fff}
+.hero-x .hero-dots button{width:34px;height:3px;border-radius:3px;background:rgba(255,255,255,.28);position:relative;overflow:hidden;transition:background .3s}
+.hero-x .hero-dots button.on{width:56px;background:rgba(255,255,255,.28)}
+.hero-x .hero-dots button.on::after{content:"";position:absolute;inset:0;background:#fff;transform-origin:left;animation:prog 6s linear forwards}
+@keyframes prog{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+/* softer, consistent motion everywhere */
+.reveal{transform:translateY(32px);transition:opacity 1s cubic-bezier(.2,.8,.2,1),transform 1s cubic-bezier(.2,.8,.2,1)}
+.stagger>*{transform:translateY(28px);transition:opacity .9s cubic-bezier(.2,.8,.2,1),transform .9s cubic-bezier(.2,.8,.2,1)}
+.stagger.in>*:nth-child(2){transition-delay:.07s}.stagger.in>*:nth-child(3){transition-delay:.14s}.stagger.in>*:nth-child(4){transition-delay:.21s}.stagger.in>*:nth-child(5){transition-delay:.28s}.stagger.in>*:nth-child(6){transition-delay:.35s}
+.pkg,.arch,.svc,.deal{will-change:transform}
+.tilt{transition:transform .6s cubic-bezier(.2,.8,.2,1),box-shadow .6s cubic-bezier(.2,.8,.2,1)}
+.tilt.tilting{transition:transform .12s linear,box-shadow .4s}
+.pkg:hover{transform:translateY(-6px)}
+.deal:hover{transform:translateY(-6px)}
+.pkg .media img,.arch img,.deal img{transition:transform 1.4s cubic-bezier(.2,.8,.2,1)}
+.pkg:hover .media img,.arch:hover img,.deal:hover img{transform:scale(1.05)}
+.btn{transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s,background .3s,color .3s}
+.header,.header .container{transition:height .4s cubic-bezier(.2,.8,.2,1),background .4s,box-shadow .4s,top .4s}
+.header.scrolled .container{height:68px}
+/* images fade in once decoded */
+img.fade{opacity:0;transition:opacity .8s ease}
+img.fade.ok{opacity:1}
+@media (max-width:820px){.hero-x::before{background:linear-gradient(180deg,rgba(12,14,52,.55),rgba(12,14,52,.8))}.hero-x .hero-slides img{object-position:72% center}.hero-meta{justify-content:center}}
+@media (prefers-reduced-motion:reduce){.hero-copy>*{opacity:1;transform:none;animation:none}}
+@media (min-width:821px){.hero-x{min-height:calc(100vh - 38px)}@supports (height:100svh){.hero-x{min-height:calc(100svh - 38px)}}.hero-grid{padding:110px 0 110px!important}}

@@ -37,27 +37,6 @@
       "title": "",
       "subtitle": "",
       "active": true
-    },
-    {
-      "id": "02802d4458e5",
-      "image": "/img/hero/slide4.jpg",
-      "title": "",
-      "subtitle": "",
-      "active": true
-    },
-    {
-      "id": "0895801edd7f",
-      "image": "/img/hero/slide5.jpg",
-      "title": "",
-      "subtitle": "",
-      "active": true
-    },
-    {
-      "id": "6e92e1980ec8",
-      "image": "/img/hero/slide6.jpg",
-      "title": "",
-      "subtitle": "",
-      "active": true
     }
   ],
   "packages": [
