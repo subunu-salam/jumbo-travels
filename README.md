@@ -3,7 +3,7 @@
 The new public website for **jumbotravels.com**, plus a restricted admin portal. The client can manage packages, prices, descriptions and images without a developer.
 
 - **Public site:** home, holiday packages list, package detail pages and a 404 page. Fully responsive, with an animated logo and scroll animations, in the existing brand colours.
-- **Admin portal:** `/admin`
+- **Admin portal:** `/admin` (password-protected)
   - Packages: add, edit, delete, reorder, feature on the homepage, show or hide
   - Package photos: upload several, reorder, choose the cover, remove
   - Flight and hotel deals: prices, notes, images
@@ -14,29 +14,37 @@ The new public website for **jumbotravels.com**, plus a restricted admin portal.
 
 ## Run locally
 ```bash
-cp .env.example .env            # optional
-ADMIN_PASSWORD=yourpass npm start
+ADMIN_PASSWORD=yourpass node server.js
 # site  → http://localhost:3000
 # admin → http://localhost:3000/admin   (user: admin)
 ```
-Requires Node 18 or later. There are **no npm dependencies**: the server uses only Node's built-in modules.
+Requires Node 18 or later. Locally, content is saved to `data/content.json` and uploaded images go to `uploads/`, so `npm install` isn't needed.
 
-## How content works
-- `data/seed.json` holds the starting content, taken from the current site.
-- On the first run it is copied to `data/content.json`, and all admin edits are saved there.
-- Uploaded images go to `uploads/`.
-- Both are git-ignored, so live content is never overwritten by a deploy.
+## Deploy on Vercel
+Vercel functions can't keep files between requests, so in production:
+- content (packages, prices, text) is saved in **Upstash Redis**
+- uploaded photos go to **Vercel Blob**
 
-## Deploy (Render)
-`render.yaml` sets up a web service with a persistent disk at `/var/data` for content and uploads. Set `ADMIN_PASSWORD` in the Render dashboard.
+The code switches automatically based on environment variables.
+
+1. Push the repo to GitHub, then in Vercel go to **Add New → Project** and import it. The framework preset is **Other**, with no build command needed. The output directory is `public`.
+2. In the project, go to **Storage → Create → Upstash (Redis)** and connect it. This adds `KV_REST_API_URL` and `KV_REST_API_TOKEN`.
+3. Go to **Storage → Create → Blob** and connect it. This adds `BLOB_READ_WRITE_TOKEN`.
+4. In **Settings → Environment Variables**, add:
+   - `ADMIN_PASSWORD`: a strong password
+   - `SESSION_SECRET`: a long random string
+   - `ADMIN_USER`: optional, defaults to `admin`
+5. **Redeploy.** On the first visit, Redis is filled from `data/seed.json`.
 
 ## Structure
 ```
-server.js          API, auth, image uploads, static files
-data/seed.json     starting content
-public/            website (HTML, CSS, vanilla JS, brand images, fonts)
-admin/             admin portal
-uploads/           admin-uploaded images (runtime)
+api/index.js       Vercel function: every /api/* request
+lib/api.js         API logic: auth, packages, deals, banners, site settings, uploads
+lib/store.js       storage: Redis + Blob on Vercel, local files in dev
+data/seed.json     starting content (taken from the current site)
+public/            website (static) + public/admin (admin portal)
+server.js          local dev server (mirrors vercel.json routes)
+vercel.json        rewrites (/packages/:slug, /api/*), cache headers
 ```
 
 ## Brand

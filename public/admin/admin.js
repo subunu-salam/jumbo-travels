@@ -18,14 +18,16 @@ const money = n => `${DATA.site.currency} ${Number(n || 0).toFixed(3)}`;
 function pickFiles(multiple = true) {
   return new Promise(res => { const f = $('#file'); f.multiple = multiple; f.value = ''; f.onchange = () => res([...f.files]); f.click(); });
 }
-function shrink(file, max = 2000) { // resize big photos in the browser before upload
+function shrink(file, max = 1800) { // resize big photos in the browser before upload
   return new Promise((res, rej) => {
     if (file.type === 'image/gif') { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); return; }
     const img = new Image(); img.onload = () => {
       const k = Math.min(1, max / Math.max(img.width, img.height));
       const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
       c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-      res(c.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', .86)); URL.revokeObjectURL(img.src);
+      let out = c.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', .82);
+      if (out.length > 3.5e6) out = c.toDataURL('image/jpeg', .8); // keep under the server upload limit
+      res(out); URL.revokeObjectURL(img.src);
     }; img.onerror = () => rej(new Error('Could not read that image')); img.src = URL.createObjectURL(file);
   });
 }
