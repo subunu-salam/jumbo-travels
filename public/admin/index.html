@@ -9,16 +9,34 @@
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="grid"></i></div>
 
 <section class="login hidden" id="login">
-  <div class="login-art" aria-hidden="true"><span class="ring r1"></span><span class="ring r2"></span><span class="ring r3"></span><img src="/img/logo-globe.png" alt=""></div>
+  <div class="stars" aria-hidden="true"></div>
+  <div class="brand-scene" id="brand-scene" aria-hidden="true">
+    <div class="scene-3d" id="scene-3d">
+      <div class="halo"></div>
+      <div class="orbit o1"><i class="comet"></i></div>
+      <div class="orbit o2"><i class="comet c2"></i></div>
+      <div class="globe-3d">
+        <span class="gl l1"></span><span class="gl l2"></span><span class="gl l3"></span><span class="gl l4"></span>
+        <span class="gl-sheen"></span>
+      </div>
+      <div class="floor"></div>
+    </div>
+    <div class="lockup">
+      <span class="lk lk-en"></span><span class="lk-div"></span><span class="lk lk-ar"></span>
+    </div>
+    <p class="tagline">Trusted travel partner for 50+ years</p>
+    <div class="pills"><span>Flights</span><span>Hotels</span><span>Holidays</span><span>Transfers</span></div>
+  </div>
   <form id="login-form">
-    <span class="jl-mini"><img src="/img/logo-full.png" alt="Jumbo Travel"></span>
+    <span class="form-logo" role="img" aria-label="Jumbo Travel"></span>
     <h1>Welcome to <em>Studio</em></h1><p>Sign in to manage packages, deals and everything your travellers see.</p>
     <div style="display:grid;gap:14px">
       <div><label for="u">Username</label><input type="text" id="u" autocomplete="username" required></div>
-      <div><label for="p">Password</label><input type="password" id="p" autocomplete="current-password" required></div>
+      <div><label for="p">Password</label><div class="pw"><input type="password" id="p" autocomplete="current-password" required><button type="button" class="eye" id="eye" aria-label="Show password"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 5c5 0 9 4.5 10 7-1 2.5-5 7-10 7S3 14.5 2 12c1-2.5 5-7 10-7zm0 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4z" fill="currentColor"/></svg></button></div></div>
       <button class="btn btn-primary btn-lg" style="justify-content:center">Sign in<svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 11h11.2l-4.6-4.6L13 5l7 7-7 7-1.4-1.4 4.6-4.6H5z" fill="currentColor"/></svg></button>
     </div>
     <div class="err-msg" id="login-err"></div>
+    <p class="secure"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 2a5 5 0 0 1 5 5v3h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v3h6V7a3 3 0 0 0-3-3z" fill="currentColor"/></svg>Secure, encrypted sign-in</p>
   </form>
 </section>
 

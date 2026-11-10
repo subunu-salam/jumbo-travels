@@ -379,6 +379,18 @@ const VIEWS = {
   },
 };
 
+// ---------- login scene: mouse-reactive 3D ----------
+(() => {
+  const L = $('#login'), sc = $('#scene-3d'); if (!sc) return;
+  const fine = matchMedia('(hover:hover) and (pointer:fine)').matches && !matchMedia('(prefers-reduced-motion:reduce)').matches;
+  let raf = 0;
+  if (fine) L.addEventListener('mousemove', e => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0;
+    const x = e.clientX / innerWidth - .5, y = e.clientY / innerHeight - .5;
+    sc.style.setProperty('--rx', (-y * 18).toFixed(2) + 'deg'); sc.style.setProperty('--ry', (x * 26).toFixed(2) + 'deg'); }); });
+  L.addEventListener('mouseleave', () => { sc.style.setProperty('--rx', '0deg'); sc.style.setProperty('--ry', '0deg'); });
+  $('#eye').onclick = () => { const p = $('#p'); p.type = p.type === 'password' ? 'text' : 'password'; };
+})();
+
 // ---------- shell interactions ----------
 $('#collapse').onclick = () => { const m = $('#app').classList.toggle('mini'); try { localStorage.setItem('jt-mini', m ? '1' : '0'); } catch {} setTimeout(moveIndicator, 520); };
 $('#burger').onclick = () => $('#app').classList.add('open');
