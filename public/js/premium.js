@@ -22,10 +22,14 @@
     c.deals.filter(d => d.type === 'flight' && d.image).forEach(d => { if (!dests.some(x => x.city.toLowerCase() === d.title.toLowerCase())) dests.push({ city: d.title, country: 'Flights from Kuwait', img: d.image, from: d.price, n: 0 }); });
     q('#dest').innerHTML = dests.map(d => `
       <a class="arch tilt" href="${d.n ? `/packages?q=${encodeURIComponent(d.city)}` : `${BOOK}?searchTab=flight`}">
-        <img src="${E(d.img)}" alt="${E(d.city)}" loading="lazy"><span class="pill">${d.n ? `${d.n} package${d.n > 1 ? 's' : ''}` : 'Flights'}</span>
-        <div class="in"><small>${E(d.country)}</small><h3>${E(d.city)}</h3><span style="font-size:.85rem;color:#dfe0f3">from ${money(d.from, cur)}</span></div>
+        <span class="arch-media"><img src="${E(d.img)}" alt="${E(d.city)}" loading="lazy"></span>
+        <span class="in"><small>${E(d.country)}</small><h3>${E(d.city)}</h3>
+          <span class="meta"><span>from <b>${money(d.from, cur)}</b></span><span class="tag">${d.n ? `${d.n} package${d.n > 1 ? 's' : ''}` : 'Flights'}</span></span>
+          <span class="cta">Explore ${arrow}</span></span>
       </a>`).join('');
     q('#dest-list').innerHTML = dests.map(d => `<option value="${E(d.city)}">`).join('');
+    const rail = q('#dest'), edge = () => { const s = rail.scrollLeft, m = rail.scrollWidth - rail.clientWidth - 2; rail.classList.toggle('at-start', s < 4); rail.classList.toggle('at-end', s > m); qa('[data-rail=dest]').forEach(b => b.disabled = b.dataset.dir < 0 ? s < 4 : s > m); };
+    rail.addEventListener('scroll', () => requestAnimationFrame(edge), { passive: true }); edge();
     qa('[data-rail]').forEach(b => b.onclick = () => { const r = q('#' + b.dataset.rail); r.scrollBy({ left: r.clientWidth * .8 * b.dataset.dir, behavior: 'smooth' }); });
 
     // hero chips + search
