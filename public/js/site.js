@@ -31,38 +31,48 @@ const LOGO = `
 const page = document.body.dataset.page;
 let CONTENT = null;
 
+const PORTAL = 'https://www.jumbotravels.com/en';
 function header(site) {
   const link = (href, label) => `<a href="${href}" class="${location.pathname === href ? 'active' : ''}">${label}</a>`;
   return `
   <div class="topbar"><div class="container">
-    <span>Trusted travel partner for 50+ years</span>
-    <div class="links"><a href="tel:${esc(site.phone)}">${esc(site.phone)}</a><a href="mailto:${esc(site.email)}">${esc(site.email)}</a><a href="${BOOKING}?searchTab=flight">My Booking</a></div>
+    <span class="tb-l"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z" fill="currentColor"/></svg><a href="tel:${esc(site.phone.replace(/\s/g, ''))}">${esc(site.phone)}</a><span class="tb-dot"></span><span class="tb-hide">Trusted travel partner for 50+ years</span></span>
+    <div class="links"><a href="/manage-booking"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H5V8h14z" fill="currentColor"/></svg>Manage booking</a><button type="button" data-auth><svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 2a5 5 0 0 1 5 5v3h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v3h6V7a3 3 0 0 0-3-3z" fill="currentColor"/></svg>Login / Register</button></div>
   </div></div>
   <header class="header"><div class="container">
     <a class="logo" href="/">${LOGO}</a>
     <nav class="nav" id="nav">
-      ${link('/', 'Home')}${link('/packages', 'Holiday Packages')}<a href="/#deals">Deals</a><a href="/#why">About</a><a href="#contact">Contact</a>
+      ${link('/', 'Home')}${link('/packages', 'Holidays')}<a href="/#deals">Deals</a><a href="/#routes">Flights</a>${link('/manage-booking', 'My booking')}<a href="#contact">Contact</a>
+      <button type="button" class="nav-auth" data-auth>Login / Register</button>
       <a class="btn btn-primary" href="${BOOKING}?searchTab=flight">Book a flight</a>
     </nav>
     <button class="menu-btn" aria-label="Menu" aria-controls="nav"><span></span><span></span><span></span></button>
   </div></header>`;
 }
 function footer(site) {
-  const soc = Object.entries(site.social || {}).filter(([, v]) => v);
+  const S = site.social || {};
+  const P = `${PORTAL}`;
   return `
-  <footer class="footer" id="contact"><div class="container">
-    <div class="cols">
-      <div><a class="logo" href="/">${LOGO}</a><p style="margin-top:16px;max-width:34ch">${esc(site.aboutText)}</p></div>
-      <div><h4>Explore</h4><ul><li><a href="/packages">Holiday packages</a></li><li><a href="/#deals">Flight deals</a></li><li><a href="/#deals">Hotel deals</a></li><li><a href="${BOOKING}?searchTab=activity">Activities</a></li></ul></div>
-      <div><h4>Book</h4><ul><li><a href="${BOOKING}?searchTab=flight">Flights</a></li><li><a href="${BOOKING}?searchTab=hotel">Hotels</a></li><li><a href="${BOOKING}?searchTab=FH">Flight + Hotel</a></li><li><a href="${BOOKING}?searchTab=transfer">Transfers</a></li></ul></div>
-      <div><h4>Get in touch</h4><ul>
-        <li><a href="tel:${esc(site.phone)}">${esc(site.phone)}</a></li><li><a href="mailto:${esc(site.email)}">${esc(site.email)}</a></li>
-        ${site.address ? `<li>${esc(site.address)}</li>` : ''}
-        ${soc.map(([k, v]) => `<li><a href="${esc(v)}" target="_blank" rel="noopener">${k[0].toUpperCase() + k.slice(1)}</a></li>`).join('')}
-      </ul></div>
+  <footer class="footer" id="contact">
+    <div class="container">
+      <div class="f-top">
+        <div class="f-brand"><a class="logo" href="/">${LOGO}</a><p>${esc(site.aboutText)}</p>
+          <div class="f-social">${S.facebook ? `<a href="${esc(S.facebook)}" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M14 8V6.5c0-.7.5-1 1-1h2V2h-3a4 4 0 0 0-4 4v2H8v3.5h2V22h4V11.5h2.8L17.5 8z" fill="currentColor"/></svg></a>` : ''}${S.instagram ? `<a href="${esc(S.instagram)}" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>` : ''}${S.x ? `<a href="${esc(S.x)}" target="_blank" rel="noopener" aria-label="X"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M17.8 3h3.1l-6.8 7.7L22 21h-6.2l-4.9-6.3L5.3 21H2.2l7.2-8.3L1.8 3h6.3l4.4 5.8zm-1.1 16.2h1.7L7.4 4.7H5.6z" fill="currentColor"/></svg></a>` : ''}</div>
+        </div>
+        <div><h4>Explore</h4><ul><li><a href="/packages">Holiday packages</a></li><li><a href="/#deals">Flight &amp; hotel deals</a></li><li><a href="/#routes">Popular flights</a></li><li><a href="/manage-booking">Manage my booking</a></li><li><a href="${P}/CustomerDirectpayment" target="_blank" rel="noopener">Direct payment</a></li></ul></div>
+        <div><h4>Quick links</h4><ul><li><a href="${P}/AboutUs" target="_blank" rel="noopener">About us</a></li><li><a href="${P}/TermsConditions" target="_blank" rel="noopener">Terms of use</a></li><li><a href="${P}/SiteMap" target="_blank" rel="noopener">Site map</a></li><li><a href="${P}/ContactUs" target="_blank" rel="noopener">Support</a></li><li><a href="${P}/Faq" target="_blank" rel="noopener">FAQ</a></li><li><a href="${P}/PrivacyPolicy" target="_blank" rel="noopener">Privacy policy</a></li></ul></div>
+        <div class="f-contact"><h4>Have questions?</h4>
+          <a class="f-big" href="tel:${esc(site.phone.replace(/\s/g, ''))}">${esc(site.phone)}</a><a class="f-mail" href="mailto:${esc(site.email)}">${esc(site.email)}</a>
+          ${site.appStore || site.playStore ? `<h4 style="margin-top:22px">Get the app</h4><p class="f-small">Find the cheapest flights on your phone.</p><div class="f-apps">${site.appStore ? `<a href="${esc(site.appStore)}" target="_blank" rel="noopener"><img src="/img/badges/download-Appstore.png" alt="Download on the App Store" loading="lazy"></a>` : ''}${site.playStore ? `<a href="${esc(site.playStore)}" target="_blank" rel="noopener"><img src="/img/badges/download-googleplay.png" alt="Get it on Google Play" loading="lazy"></a>` : ''}</div>` : ''}
+        </div>
+      </div>
+      <div class="f-trust">
+        <div class="f-acc">${site.iataNo ? `<span><img src="/img/badges/iata.png" alt="IATA" loading="lazy">IATA No. ${esc(site.iataNo)}</span>` : ''}${site.dgcaNo ? `<span><img src="/img/badges/dgca.png" alt="DGCA" loading="lazy">DGCA No. ${esc(site.dgcaNo)}</span>` : ''}</div>
+        <div class="f-pay"><span>Secure payments</span><img src="/img/badges/k-net.png" alt="KNET" loading="lazy"><img src="/img/badges/visa.png" alt="Visa" loading="lazy"><img src="/img/badges/mastercard.png" alt="Mastercard" loading="lazy"><img src="/img/badges/tawate.png" alt="thawte secured" loading="lazy"></div>
+      </div>
+      <div class="bottom"><span>© ${new Date().getFullYear()} jumbotravels.com. All rights reserved.</span><span><a href="${P}/PrivacyPolicy" target="_blank" rel="noopener">Privacy</a> · <a href="${P}/TermsConditions" target="_blank" rel="noopener">Terms</a></span></div>
     </div>
-    <div class="bottom"><span>© ${new Date().getFullYear()} Jumbo Travel. All rights reserved.</span><a href="https://www.jumbotravels.com/privacy-policy">Privacy policy</a></div>
-  </div></footer>`;
+  </footer>`;
 }
 
 const pkgCard = (p, cur) => `
@@ -79,7 +89,7 @@ const pkgCard = (p, cur) => `
 const dealCard = (d, cur) => `
   <a class="deal" href="${BOOKING}?searchTab=${d.type === 'hotel' ? 'hotel' : 'flight'}">
     ${d.image ? `<img src="${esc(d.image)}" alt="${esc(d.title)}" loading="lazy">` : ''}
-    <div class="in"><small>${d.type === 'flight' ? 'Flights to' : esc(d.location)}</small><h3>${esc(d.title)}</h3>
+    <div class="in"><small>${d.type === 'flight' ? 'Flights to' : esc(d.location)}</small><h3>${esc(d.title)}</h3>${d.stars ? `<span class="stars" aria-label="${d.stars} star hotel">${'★'.repeat(d.stars)}</span>` : ''}
       <div class="row">${d.note ? `<span class="note">${esc(d.note)}</span>` : '<span></span>'}<span class="amt">${fmt(d.price, cur)}</span></div></div>
   </a>`;
 

@@ -10,11 +10,16 @@
     "currency": "KWD",
     "aboutText": "Jumbo Travel is a brand of trust, offering travel services for more than 50 years with efficiency, courtesy and credibility.",
     "social": {
-      "facebook": "",
-      "instagram": "",
+      "facebook": "https://www.facebook.com/JumboTravelKuwait",
+      "instagram": "http://instagram.com/jumbotravels",
       "x": ""
     },
-    "bookingEngine": "https://www.jumbotravels.com/en"
+    "bookingEngine": "https://www.jumbotravels.com/en",
+    "appStore": "https://apps.apple.com/in/app/jumbo-travel/id6450011046",
+    "playStore": "http://market.android.com/details?id=com.travel.jumbotravels",
+    "iataNo": "42202300",
+    "dgcaNo": "1995/375-ATL-2024",
+    "tawkId": ""
   },
   "slides": [
     {
@@ -287,7 +292,8 @@
       "price": 30.573,
       "note": "per night",
       "image": "/img/deals/dubai-hoteldeals.jpg",
-      "active": true
+      "active": true,
+      "stars": 5
     },
     {
       "id": "57478e42149f",
@@ -297,7 +303,8 @@
       "price": 64.356,
       "note": "per night",
       "image": "/img/deals/paris-hoteldeals.jpg",
-      "active": true
+      "active": true,
+      "stars": 5
     },
     {
       "id": "6e9319ea0694",
@@ -307,7 +314,8 @@
       "price": 9.193,
       "note": "per night",
       "image": "/img/deals/istanbul-hoteldeals.jpg",
-      "active": true
+      "active": true,
+      "stars": 5
     },
     {
       "id": "a7213bba8d42",
@@ -317,7 +325,8 @@
       "price": 23.701,
       "note": "per night",
       "image": "/img/deals/cairo-hoteldeals.jpg",
-      "active": true
+      "active": true,
+      "stars": 5
     },
     {
       "id": "0c85795f8dd8",
@@ -327,7 +336,8 @@
       "price": 134.091,
       "note": "per night",
       "image": "/img/deals/ny-hoteldeals.jpg",
-      "active": true
+      "active": true,
+      "stars": 5
     },
     {
       "id": "107c80db596b",
@@ -337,7 +347,8 @@
       "price": 49.473,
       "note": "per night",
       "image": "/img/deals/riyadh-hoteldeals.jpg",
-      "active": true
+      "active": true,
+      "stars": 5
     },
     {
       "id": "cb54712c4a4e",
@@ -347,7 +358,8 @@
       "price": 67.694,
       "note": "per night",
       "image": "/img/deals/barcelon-hoteldeals.jpg",
-      "active": true
+      "active": true,
+      "stars": 5
     },
     {
       "id": "49adca87249f",
@@ -357,7 +369,9 @@
       "price": 65.18,
       "note": "per night",
       "image": "/img/deals/ams-hoteldeals.jpg",
-      "active": true
+      "active": true,
+      "stars": 5
     }
-  ]
+  ],
+  "subscribers": []
 }

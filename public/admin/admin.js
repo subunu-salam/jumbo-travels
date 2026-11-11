@@ -59,9 +59,10 @@ const NAV = [
   ['packages', 'Packages', 'Holidays & pricing', '<path d="M20 6h-4V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM10 4h4v2h-4z" fill="currentColor"/>'],
   ['deals', 'Deals', 'Flight & hotel offers', '<path d="M21.4 11.6l-9-9A2 2 0 0 0 11 2H4a2 2 0 0 0-2 2v7c0 .6.2 1.1.6 1.4l9 9a2 2 0 0 0 2.8 0l7-7a2 2 0 0 0 0-2.8zM6.5 8a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" fill="currentColor"/>'],
   ['slides', 'Banners', 'Homepage hero photos', '<path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5z" fill="currentColor"/>'],
+  ['subscribers', 'Subscribers', 'Newsletter sign-ups', '<path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5z" fill="currentColor"/>'],
   ['site', 'Website', 'Text, contact & social', '<path d="M3 17.2V21h3.8l11-11-3.8-3.8zM20.7 7a1 1 0 0 0 0-1.4l-2.3-2.3a1 1 0 0 0-1.4 0l-1.8 1.8 3.8 3.8z" fill="currentColor"/>'],
 ];
-const COUNT = { packages: () => DATA.packages.length, deals: () => DATA.deals.length, slides: () => DATA.slides.length };
+const COUNT = { packages: () => DATA.packages.length, deals: () => DATA.deals.length, slides: () => DATA.slides.length, subscribers: () => (DATA.subscribers || []).length };
 function nav() {
   const box = $('#side-nav');
   box.innerHTML = '<span class="indicator" id="indicator"></span>' + NAV.map(([k, l, sub, ic]) => `<button data-v="${k}" class="${VIEW === k ? 'on' : ''}" title="${l}"><span class="nav-ic"><svg viewBox="0 0 24 24">${ic}</svg></span><span class="nav-t"><b>${l}</b><small>${sub}</small></span>${COUNT[k] ? `<span class="nav-c">${COUNT[k]()}</span>` : '<span></span>'}</button>`).join('');
@@ -311,12 +312,13 @@ const VIEWS = {
             <div><label>${'Destination / hotel name'} *</label><input type="text" name="title" value="${esc(x.title)}" required></div>
             <div><label>Location line</label><input type="text" name="location" value="${esc(x.location)}" placeholder="From Kuwait / Dubai, UAE"></div>
             <div><label>Price (${esc(DATA.site.currency)}) *</label><input type="number" name="price" value="${esc(x.price)}" min="0" step="0.001"></div>
+            <div><label>Hotel stars <span class="hint">— hotels only</span></label><select name="stars">${[0, 1, 2, 3, 4, 5].map(n => `<option value="${n}" ${+(x.stars || 0) === n ? 'selected' : ''}>${n ? n + ' star' + (n > 1 ? 's' : '') : 'None'}</option>`).join('')}</select></div>
             <div class="full"><label>Small note <span class="hint">— e.g. “Non refundable”, “per night”</span></label><input type="text" name="note" value="${esc(x.note)}" maxlength="60"></div>
             <label class="toggle"><input type="checkbox" name="active" ${x.active !== false ? 'checked' : ''}>Show on website</label>
           </div>`,
           async f => {
             if (!val(f, 'title').trim()) throw new Error('Please enter a name');
-            await saveItem('deals', x, { type: val(f, 'type'), title: val(f, 'title'), location: val(f, 'location'), price: val(f, 'price'), note: val(f, 'note'), image: img[0] || '', active: val(f, 'active') });
+            await saveItem('deals', x, { type: val(f, 'type'), title: val(f, 'title'), location: val(f, 'location'), price: val(f, 'price'), note: val(f, 'note'), stars: val(f, 'stars'), image: img[0] || '', active: val(f, 'active') });
           }, x.id && (() => deleteItem('deals', x)));
         imageManager($('#img', d), img, false);
       },
@@ -344,6 +346,24 @@ const VIEWS = {
     });
   },
 
+  subscribers() {
+    const L = DATA.subscribers || [];
+    $('#view').innerHTML = `<div class="top"><div><h1>Subscribers</h1><p>People who signed up for deals from the website popup or newsletter form.</p></div><button class="btn btn-primary" id="csv" ${L.length ? '' : 'disabled'}>Export CSV</button></div>
+      <div class="dash" style="margin-bottom:16px">
+        <div class="card kpi c4"><span class="lbl">Total subscribers</span><b>${L.length}</b></div>
+        <div class="card kpi c4"><span class="lbl">Last 7 days</span><b>${L.filter(x => Date.now() - new Date(x.at) < 7 * 864e5).length}</b></div>
+        <div class="card kpi c4"><span class="lbl">With mobile number</span><b>${L.filter(x => x.phone).length}</b></div>
+      </div>
+      <div class="toolbar"><input type="search" id="q" placeholder="Search email or phone…"></div><div class="items" id="list"></div>`;
+    const draw = () => { const t = $('#q').value.toLowerCase();
+      $('#list').innerHTML = L.filter(x => !t || (x.email + ' ' + x.phone).toLowerCase().includes(t)).map(x => `<div class="item sub" data-id="${x.id}" style="grid-template-columns:44px 1fr auto auto"><span class="avatar" style="width:40px;height:40px">${esc(x.email[0].toUpperCase())}</span><div><h3>${esc(x.email)}</h3><p>${esc(x.phone || 'No phone')} · ${esc(x.source)} · ${ago(x.at)}</p></div><a class="btn btn-ghost btn-sm" href="mailto:${esc(x.email)}">Email</a><button class="btn btn-danger btn-sm" data-del>Remove</button></div>`).join('') || '<div class="card empty">No subscribers yet. Sign-ups from the website will appear here.</div>';
+      $$('[data-del]').forEach(b => b.onclick = async () => { const id = b.closest('.item').dataset.id; if (!confirm('Remove this subscriber?')) return; await api('subscribers/' + id, { method: 'DELETE' }); await refresh(); toast('Removed'); VIEWS.subscribers(); nav(); }); };
+    $('#q').oninput = draw; draw();
+    $('#csv').onclick = () => { const rows = [['email', 'phone', 'source', 'signed_up'], ...L.map(x => [x.email, x.phone, x.source, x.at])];
+      const csv = rows.map(r => r.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',')).join('\n');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `jumbo-subscribers-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); };
+  },
+
   site() {
     const s = DATA.site;
     $('#view').innerHTML = `<div class="top"><div><h1>Website text &amp; contact</h1><p>Homepage headline and the contact details shown across the site.</p></div></div>
@@ -360,6 +380,11 @@ const VIEWS = {
         <div><label>WhatsApp number <span class="hint">— adds “Enquire on WhatsApp” to packages</span></label><input type="text" name="whatsapp" value="${esc(s.whatsapp)}" placeholder="+965…"></div>
         <div><label>Address</label><input type="text" name="address" value="${esc(s.address)}"></div>
         <div><label>Currency code</label><input type="text" name="currency" value="${esc(s.currency)}" maxlength="5"></div>
+        <div><label>IATA number</label><input type="text" name="iataNo" value="${esc(s.iataNo)}"></div>
+        <div><label>DGCA number</label><input type="text" name="dgcaNo" value="${esc(s.dgcaNo)}"></div>
+        <div><label>App Store link</label><input type="url" name="appStore" value="${esc(s.appStore)}"></div>
+        <div><label>Google Play link</label><input type="url" name="playStore" value="${esc(s.playStore)}"></div>
+        <div class="full"><label>Live chat (Tawk.to) property ID <span class="hint">— optional, e.g. 64ab12cd/1h5abc. Leave blank to show the built-in contact panel.</span></label><input type="text" name="tawkId" value="${esc(s.tawkId)}"></div>
       </div></div>
       <div><h3 style="color:var(--navy);margin-bottom:12px">Social links <span class="hint">— leave blank to hide</span></h3><div class="fields">
         <div><label>Facebook</label><input type="url" name="facebook" value="${esc(s.social?.facebook)}"></div>
@@ -371,7 +396,7 @@ const VIEWS = {
     $('#site-form').onsubmit = async e => {
       e.preventDefault(); const f = e.target, b = $('button', f); b.disabled = true;
       try {
-        const body = Object.fromEntries(['heroTitle', 'heroHighlight', 'heroSubtitle', 'aboutText', 'phone', 'email', 'whatsapp', 'address', 'currency'].map(k => [k, val(f, k)]));
+        const body = Object.fromEntries(['heroTitle', 'heroHighlight', 'heroSubtitle', 'aboutText', 'phone', 'email', 'whatsapp', 'address', 'currency', 'iataNo', 'dgcaNo', 'appStore', 'playStore', 'tawkId'].map(k => [k, val(f, k)]));
         body.social = { facebook: val(f, 'facebook'), instagram: val(f, 'instagram'), x: val(f, 'x') };
         DATA.site = await api('site', { method: 'PUT', body }); toast('Saved — live on the website');
       } catch (er) { toast(er.message, 1); } finally { b.disabled = false; }

@@ -23,6 +23,7 @@ function route(p) {
   if (p === '/packages') return '/packages.html';
   if (/^\/packages\/[\w-]+\/?$/.test(p)) return '/package.html';
   if (p === '/admin' || p === '/admin/') return '/admin/index.html';
+  if (p === '/manage-booking') return '/manage-booking.html';
   if (p === '/') return '/index.html';
   return p;
 }
