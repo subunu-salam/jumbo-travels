@@ -173,7 +173,7 @@ async function renderPackage(c) {
 
 // ---------- boot ----------
 (async function boot() {
-  try { CONTENT = await (await fetch('/api/content')).json(); }
+  try { const r = await fetch('/api/content'); if (!r.ok) throw 0; CONTENT = await r.json(); }
   catch { CONTENT = { site: { phone: '+965 22284697', email: 'hello@jumbotravels.com', currency: 'KWD', aboutText: '' }, slides: [], packages: [], deals: [] }; }
   $('#site-header').innerHTML = header(CONTENT.site);
   $('#site-footer').innerHTML = footer(CONTENT.site);
