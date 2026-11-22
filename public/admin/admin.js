@@ -59,10 +59,12 @@ const NAV = [
   ['packages', 'Packages', 'Holidays & pricing', '<path d="M20 6h-4V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM10 4h4v2h-4z" fill="currentColor"/>'],
   ['deals', 'Deals', 'Flight & hotel offers', '<path d="M21.4 11.6l-9-9A2 2 0 0 0 11 2H4a2 2 0 0 0-2 2v7c0 .6.2 1.1.6 1.4l9 9a2 2 0 0 0 2.8 0l7-7a2 2 0 0 0 0-2.8zM6.5 8a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" fill="currentColor"/>'],
   ['slides', 'Banners', 'Homepage hero photos', '<path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5z" fill="currentColor"/>'],
+  ['bookings', 'Bookings', 'Trips & requests', '<path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H5V8h14zM7 10h5v5H7z" fill="currentColor"/>'],
+  ['customers', 'Customers', 'Website accounts', '<path d="M16 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm-8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm0 2c-2.3 0-7 1.2-7 3.5V19h14v-2.5C15 14.2 10.3 13 8 13zm8 0c-.3 0-.6 0-1 .1 1.2.8 2 2 2 3.4V19h6v-2.5c0-2.3-4.7-3.5-7-3.5z" fill="currentColor"/>'],
   ['subscribers', 'Subscribers', 'Newsletter sign-ups', '<path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5z" fill="currentColor"/>'],
   ['site', 'Website', 'Text, contact & social', '<path d="M3 17.2V21h3.8l11-11-3.8-3.8zM20.7 7a1 1 0 0 0 0-1.4l-2.3-2.3a1 1 0 0 0-1.4 0l-1.8 1.8 3.8 3.8z" fill="currentColor"/>'],
 ];
-const COUNT = { packages: () => DATA.packages.length, deals: () => DATA.deals.length, slides: () => DATA.slides.length, subscribers: () => (DATA.subscribers || []).length };
+const COUNT = { packages: () => DATA.packages.length, deals: () => DATA.deals.length, slides: () => DATA.slides.length, subscribers: () => (DATA.subscribers || []).length, bookings: () => (DATA.bookings || []).filter(b => b.status === 'pending').length || (DATA.bookings || []).length, customers: () => (DATA.customers || []).length };
 function nav() {
   const box = $('#side-nav');
   box.innerHTML = '<span class="indicator" id="indicator"></span>' + NAV.map(([k, l, sub, ic]) => `<button data-v="${k}" class="${VIEW === k ? 'on' : ''}" title="${l}"><span class="nav-ic"><svg viewBox="0 0 24 24">${ic}</svg></span><span class="nav-t"><b>${l}</b><small>${sub}</small></span>${COUNT[k] ? `<span class="nav-c">${COUNT[k]()}</span>` : '<span></span>'}</button>`).join('');
@@ -329,21 +331,88 @@ const VIEWS = {
 
   slides() {
     listView({
-      coll: 'slides', title: 'Homepage banners', sub: 'Background photos for the big homepage banner. They rotate every few seconds.', addLabel: 'Add banner',
+      coll: 'slides', title: 'Homepage banners', sub: 'The big rotating banner on the homepage. Edit Slide 1, 2, 3… to change its photo and headline, or add more slides.', addLabel: 'Add slide',
       blank: { image: '', title: '', subtitle: '', active: true },
-      row: s => `<img class="thumb" src="${esc(s.image)}" alt=""><div><h3>Banner photo${s.active ? '' : '<span class="pill off">Hidden</span>'}</h3><p>${esc(s.image.split('/').pop())}</p></div><span></span>`,
+      row: s => { const n = DATA.slides.indexOf(s) + 1; return `<img class="thumb" src="${esc(s.image)}" alt=""><div><h3>Slide ${n}${s.active ? '' : '<span class="pill off">Hidden</span>'}</h3><p>${s.title ? esc(s.title) + (s.subtitle ? ' — ' + esc(s.subtitle) : '') : '<i>Uses the main website headline</i>'}</p></div><span></span>`; },
       edit: s => {
         const img = s.image ? [s.image] : [];
-        const d = drawer(s.id ? 'Edit banner' : 'New banner', `
-          <div><label>Banner photo <span class="hint">— wide landscape photo, at least 1600px wide works best</span></label><div class="imgs" id="img" style="grid-template-columns:1fr"></div></div>
-          <label class="toggle"><input type="checkbox" name="active" ${s.active !== false ? 'checked' : ''}>Show on website</label>`,
+        const n = s.id ? DATA.slides.indexOf(s) + 1 : DATA.slides.length + 1;
+        const d = drawer(s.id ? `Edit slide ${n}` : `New slide (slide ${n})`, `
+          <div><label>Slide photo <span class="hint">— wide landscape photo, at least 1600px wide works best. Remove (✕) to replace it.</span></label><div class="imgs" id="img" style="grid-template-columns:1fr"></div></div>
+          <div class="fields">
+            <div class="full"><label>Headline <span class="hint">— leave empty to use the main headline from “Website”</span></label><input type="text" name="title" value="${esc(s.title || '')}" maxlength="120" placeholder="${esc(DATA.site.heroTitle + ' ' + DATA.site.heroHighlight)}"></div>
+            <div class="full"><label>Sub-text <span class="hint">— optional</span></label><input type="text" name="subtitle" value="${esc(s.subtitle || '')}" maxlength="200" placeholder="${esc(DATA.site.heroSubtitle)}"></div>
+            <label class="toggle"><input type="checkbox" name="active" ${s.active !== false ? 'checked' : ''}>Show on website</label>
+          </div>`,
           async f => {
             if (!img[0]) throw new Error('Please upload a photo');
-            await saveItem('slides', s, { image: img[0], title: '', subtitle: '', active: val(f, 'active') });
+            await saveItem('slides', s, { image: img[0], title: val(f, 'title'), subtitle: val(f, 'subtitle'), active: val(f, 'active') });
           }, s.id && (() => deleteItem('slides', s)));
         imageManager($('#img', d), img, false);
       },
     });
+    $('.toolbar').insertAdjacentHTML('beforeend', `<span class="hint" style="align-self:center">Use ▲ ▼ to change the order slides appear in.</span>`);
+  },
+
+  bookings() {
+    DATA.bookings = DATA.bookings || [];
+    const ST = { pending: 'Request / pending', confirmed: 'Confirmed', ticketed: 'Ticketed', completed: 'Completed', cancelled: 'Cancelled' };
+    const TY = { package: 'Holiday package', flight: 'Flight', hotel: 'Hotel', 'flight+hotel': 'Flight + Hotel', other: 'Other' };
+    let st = 'all';
+    listView({
+      coll: 'bookings', title: 'Bookings', sub: 'Trips for your customers. Bookings show up automatically in the customer’s “My account” (matched by email or phone) and in guest look-up by reference.', addLabel: 'Add booking',
+      blank: { ref: '', name: '', email: '', phone: '', type: 'package', title: '', travelDate: '', returnDate: '', travellers: 1, amount: '', paid: '', status: 'confirmed', details: '', customerNote: '' },
+      filterFn: x => st === 'all' || x.status === st,
+      row: x => `<span class="avatar" style="width:44px;height:44px">${esc((x.name || '?')[0].toUpperCase())}</span><div><h3>${esc(x.title)}<span class="pill ${x.status === 'pending' ? 'off' : ''}">${esc(ST[x.status] || x.status)}</span>${x.source === 'website' ? '<span class="pill">From website</span>' : ''}</h3><p><b>${esc(x.ref)}</b> · ${esc(x.name || '—')} · ${esc(x.email || x.phone || '')}${x.travelDate ? ' · ' + esc(x.travelDate) : ''}</p></div><span class="price">${x.amount ? money(x.amount) : ''}</span>`,
+      edit: x => {
+        const o = (opts, cur) => Object.entries(opts).map(([k, l]) => `<option value="${k}" ${cur === k ? 'selected' : ''}>${l}</option>`).join('');
+        drawer(x.id ? `Booking ${x.ref}` : 'New booking', `
+          <div class="fields">
+            <div><label>Reference <span class="hint">— leave empty to auto-create</span></label><input type="text" name="ref" value="${esc(x.ref)}" maxlength="20"></div>
+            <div><label>Status</label><select name="status">${o(ST, x.status)}</select></div>
+            <div><label>Customer name *</label><input type="text" name="name" value="${esc(x.name)}"></div>
+            <div><label>Customer email</label><input type="email" name="email" value="${esc(x.email)}"></div>
+            <div><label>Customer phone</label><input type="tel" name="phone" value="${esc(x.phone)}" placeholder="+965…"></div>
+            <div><label>Type</label><select name="type">${o(TY, x.type)}</select></div>
+            <div class="full"><label>Trip *</label><input type="text" name="title" value="${esc(x.title)}" placeholder="e.g. Kuwait → London, Emirates, economy"></div>
+            <div><label>Departure</label><input type="date" name="travelDate" value="${esc(x.travelDate)}"></div>
+            <div><label>Return</label><input type="date" name="returnDate" value="${esc(x.returnDate)}"></div>
+            <div><label>Travellers</label><input type="number" name="travellers" min="1" value="${esc(x.travellers || 1)}"></div>
+            <div><label>Total (${esc(DATA.site.currency)})</label><input type="number" name="amount" min="0" step="0.001" value="${esc(x.amount)}"></div>
+            <div><label>Paid (${esc(DATA.site.currency)})</label><input type="number" name="paid" min="0" step="0.001" value="${esc(x.paid)}"></div>
+            <div class="full"><label>Itinerary / details <span class="hint">— the customer sees this</span></label><textarea name="details" rows="5" placeholder="Flight numbers, hotel, PNR, e-ticket numbers…">${esc(x.details)}</textarea></div>
+            ${x.customerNote ? `<div class="full"><label>Customer’s note</label><textarea name="customerNote" rows="2">${esc(x.customerNote)}</textarea></div>` : ''}
+          </div>`,
+          async f => {
+            if (!val(f, 'title').trim()) throw new Error('Please describe the trip');
+            if (!val(f, 'email').trim() && !val(f, 'phone').trim()) throw new Error('Add the customer’s email or phone so they can find this booking');
+            const b = {}; ['ref', 'status', 'name', 'email', 'phone', 'type', 'title', 'travelDate', 'returnDate', 'travellers', 'amount', 'paid', 'details', 'customerNote'].forEach(k => b[k] = val(f, k) ?? x[k]);
+            await saveItem('bookings', x, b);
+          }, x.id && (() => deleteItem('bookings', x)));
+      },
+    });
+    $('.toolbar').insertAdjacentHTML('beforeend', `<select id="st" style="max-width:200px"><option value="all">All bookings</option>${Object.entries(ST).map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select>`);
+    $('#st').onchange = e => { st = e.target.value; $('#q').dispatchEvent(new Event('input')); };
+  },
+
+  customers() {
+    const L = DATA.customers || [], B = DATA.bookings || [];
+    $('#view').innerHTML = `<div class="top"><div><h1>Customers</h1><p>People who created an account or signed in on the website.</p></div><button class="btn btn-primary" id="csv" ${L.length ? '' : 'disabled'}>Export CSV</button></div>
+      <div class="dash" style="margin-bottom:16px">
+        <div class="card kpi c4"><span class="lbl">Accounts</span><b>${L.length}</b></div>
+        <div class="card kpi c4"><span class="lbl">New in last 7 days</span><b>${L.filter(x => Date.now() - new Date(x.createdAt) < 7 * 864e5).length}</b></div>
+        <div class="card kpi c4"><span class="lbl">Signed in last 7 days</span><b>${L.filter(x => x.lastLogin && Date.now() - new Date(x.lastLogin) < 7 * 864e5).length}</b></div>
+      </div>
+      <div class="toolbar"><input type="search" id="q" placeholder="Search name, email or phone…"></div><div class="items" id="list"></div>`;
+    const nb = c => B.filter(b => b.customerId === c.id || (b.email && b.email === c.email)).length;
+    const draw = () => { const t = $('#q').value.toLowerCase();
+      $('#list').innerHTML = L.filter(x => !t || (x.name + ' ' + x.email + ' ' + x.phone).toLowerCase().includes(t)).map(x => `<div class="item sub" data-id="${x.id}" style="grid-template-columns:44px 1fr auto auto auto"><span class="avatar" style="width:40px;height:40px">${esc((x.name || x.email)[0].toUpperCase())}</span><div><h3>${esc(x.name)}</h3><p>${esc(x.email)} · ${esc(x.phone || 'No phone')} · joined ${ago(x.createdAt)}${x.lastLogin ? ' · last sign-in ' + ago(x.lastLogin) : ''} · ${nb(x)} booking${nb(x) === 1 ? '' : 's'}</p></div><button class="btn btn-ghost btn-sm" data-book>New booking</button><a class="btn btn-ghost btn-sm" href="mailto:${esc(x.email)}">Email</a><button class="btn btn-danger btn-sm" data-del>Remove</button></div>`).join('') || '<div class="card empty">No customer accounts yet. When someone registers or signs in on the website they’ll appear here.</div>';
+      $$('[data-del]').forEach(b => b.onclick = async () => { const id = b.closest('.item').dataset.id; if (!confirm('Remove this customer account? Their bookings are kept.')) return; await api('customers/' + id, { method: 'DELETE' }); await refresh(); toast('Removed'); VIEWS.customers(); nav(); });
+      $$('[data-book]').forEach(b => b.onclick = () => { const c = L.find(x => x.id === b.closest('.item').dataset.id); go('bookings'); setTimeout(() => { $('#add').click(); const f = $('.drawer form'); f.elements.name.value = c.name; f.elements.email.value = c.email; f.elements.phone.value = c.phone || ''; }, 50); }); };
+    $('#q').oninput = draw; draw();
+    $('#csv').onclick = () => { const rows = [['name', 'email', 'phone', 'joined', 'last_sign_in', 'sign_ins'], ...L.map(x => [x.name, x.email, x.phone, x.createdAt, x.lastLogin, x.logins])];
+      const csv = rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `jumbo-customers-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); };
   },
 
   subscribers() {

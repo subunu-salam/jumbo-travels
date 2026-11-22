@@ -24,6 +24,7 @@ function route(p) {
   if (/^\/packages\/[\w-]+\/?$/.test(p)) return '/package.html';
   if (p === '/admin' || p === '/admin/') return '/admin/index.html';
   if (p === '/manage-booking') return '/manage-booking.html';
+  if (p === '/account') return '/account.html';
   if (p === '/') return '/index.html';
   return p;
 }

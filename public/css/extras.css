@@ -190,3 +190,41 @@ html.jt-lock{overflow:hidden}
 @media (max-width:640px){.mb-grid{grid-template-columns:1fr;margin-top:-50px}.mb-card{padding:24px}}
 .f-acc img{background:none;padding:0;height:28px}
 .mb-c[hidden]{display:none}
+
+/* ---------- accounts, sign-in forms, bookings ---------- */
+.auth-tabs{display:inline-flex;gap:4px;padding:4px;margin:14px 0 4px;border-radius:999px;background:rgba(18,21,75,.06)}
+.auth-tabs button{border:0;background:none;padding:9px 18px;border-radius:999px;font:inherit;font-weight:700;color:var(--muted);cursor:pointer;transition:.3s}
+.auth-tabs button.on{background:#fff;color:var(--navy);box-shadow:0 6px 16px -8px rgba(18,21,75,.4)}
+.auth-form,.mb-find{display:grid;gap:12px;margin:14px 0}
+.auth-form label,.mb-find label{display:grid;gap:6px;font-size:.82rem;font-weight:700;color:var(--navy)}
+.auth-form label small{font-weight:400;color:var(--muted)}
+.auth-form input,.auth-form select,.auth-form textarea,.mb-find input{min-height:48px;border:1px solid var(--line);border-radius:12px;padding:0 14px;font:inherit;font-weight:400;background:var(--bg,#f6f7fb);outline:0;transition:.25s;min-width:0}
+.auth-form textarea{padding:12px 14px;resize:vertical}
+.auth-form input:focus,.auth-form select:focus,.auth-form textarea:focus,.mb-find input:focus{border-color:var(--magenta);background:#fff;box-shadow:0 0 0 4px rgba(238,21,121,.1)}
+.auth-form .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.auth-err{color:#d0164e;font-size:.85rem;min-height:1px;margin:0}
+.auth-go{justify-content:center;width:100%}
+.auth [data-reg]{display:none}.auth.is-reg [data-reg]{display:grid}
+.auth .auth-opt.ghost{margin-top:4px}
+.jt-modal.req .jt-sheet{grid-template-columns:1fr;width:min(560px,100%)}
+.mb-find .btn{align-self:stretch;justify-content:center;margin-top:4px}
+#guest-result:empty{display:none}
+.acct-wrap{margin-top:-70px;position:relative;z-index:2;padding-bottom:80px}
+.acct-top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;background:#fff;border-radius:22px;padding:18px 24px;border:1px solid var(--line);box-shadow:0 30px 70px -30px rgba(18,21,75,.35);margin-bottom:18px}
+.acct-top h2{margin:0;font-size:1.35rem}.acct-top h2 span{font-size:.8rem;background:var(--grad);color:#fff;border-radius:999px;padding:3px 10px;vertical-align:middle;margin-left:6px}
+.acct-acts{display:flex;gap:10px;flex-wrap:wrap}
+.acct-empty{background:#fff;border-radius:26px;padding:40px 32px;border:1px solid var(--line);text-align:center;box-shadow:0 30px 70px -30px rgba(18,21,75,.35)}
+.acct-empty p{color:var(--muted);max-width:520px;margin:8px auto 20px}.acct-empty .acct-acts{justify-content:center}
+.card-skel{height:220px;border-radius:26px;background:linear-gradient(90deg,#fff,#f1f2f8,#fff);background-size:200% 100%;animation:skel 1.2s linear infinite}
+@keyframes skel{to{background-position:-200% 0}}
+.bk-list{display:grid;gap:16px}
+.bk-card{background:#fff;border-radius:22px;padding:22px 24px;border:1px solid var(--line);box-shadow:0 24px 60px -34px rgba(18,21,75,.4);display:grid;gap:14px;margin-top:14px}
+.bk-list .bk-card{margin-top:0}
+.bk-card header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.bk-card header small{color:var(--muted)}.bk-card h3{margin:4px 0 0;font-size:1.2rem}
+.bk-st{white-space:nowrap;font-size:.78rem;font-weight:700;padding:6px 12px;border-radius:999px;background:#fff4d6;color:#8a6100}
+.st-confirmed .bk-st,.st-ticketed .bk-st{background:#dcf7e8;color:#0d7a43}.st-completed .bk-st{background:#e6e8f5;color:var(--navy)}.st-cancelled .bk-st{background:#fde3ea;color:#b0123f}
+.bk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px;border-radius:16px;background:rgba(18,21,75,.04)}
+.bk-grid small{display:block;color:var(--muted);font-size:.75rem}.bk-grid b{font-size:.95rem}.bk-grid .due{color:#d0164e}.bk-grid .ok{color:#0d7a43}
+.bk-det{margin:0;color:var(--navy)}.bk-det.muted{color:var(--muted)}.bk-note{margin:0;font-size:.88rem;color:var(--muted)}
+@media (max-width:720px){.bk-grid{grid-template-columns:1fr 1fr}.acct-top{padding:16px}.auth-form .two{grid-template-columns:1fr}}

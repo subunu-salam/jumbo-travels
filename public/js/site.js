@@ -104,7 +104,18 @@ function renderHome(c) {
   $('.hero-slides').innerHTML = slides.map((s, i) => `<img src="${esc(s.image)}" alt="" class="${i ? '' : 'on'}" ${i ? 'loading="lazy"' : 'fetchpriority="high"'}>`).join('');
   $('.hero-dots').innerHTML = slides.length > 1 ? slides.map((_, i) => `<button class="${i ? '' : 'on'}" aria-label="Slide ${i + 1}"></button>`).join('') : '';
   let cur_i = 0, timer;
-  const go = i => { const imgs = $$('.hero-slides img'), dots = $$('.hero-dots button'); imgs[cur_i]?.classList.remove('on'); dots[cur_i]?.classList.remove('on'); cur_i = (i + imgs.length) % imgs.length; imgs[cur_i]?.classList.add('on'); dots[cur_i]?.classList.add('on'); };
+  // each slide can have its own headline; empty fields fall back to the main website headline
+  const heroText = s => {
+    const t = (s && s.title) || '', sub = (s && s.subtitle) || '';
+    const h = $('#hero-title'), p = $('#hero-sub');
+    const html = t ? esc(t) : `${esc(c.site.heroTitle)}<em>${esc(c.site.heroHighlight)}</em>`;
+    if (h.innerHTML === html && p.textContent === (sub || c.site.heroSubtitle)) return;
+    h.style.opacity = p.style.opacity = 0;
+    setTimeout(() => { h.innerHTML = html; p.textContent = sub || c.site.heroSubtitle; h.style.opacity = p.style.opacity = 1; }, 250);
+  };
+  $('#hero-title').style.transition = $('#hero-sub').style.transition = 'opacity .25s';
+  if (slides[0]?.title || slides[0]?.subtitle) { $('#hero-title').innerHTML = slides[0].title ? esc(slides[0].title) : $('#hero-title').innerHTML; if (slides[0].subtitle) $('#hero-sub').textContent = slides[0].subtitle; }
+  const go = i => { const imgs = $$('.hero-slides img'), dots = $$('.hero-dots button'); imgs[cur_i]?.classList.remove('on'); dots[cur_i]?.classList.remove('on'); cur_i = (i + imgs.length) % imgs.length; imgs[cur_i]?.classList.add('on'); dots[cur_i]?.classList.add('on'); heroText(slides[cur_i]); };
   const auto = () => { clearInterval(timer); timer = setInterval(() => go(cur_i + 1), 6000); };
   $$('.hero-dots button').forEach((b, i) => b.onclick = () => { go(i); auto(); });
   if (slides.length > 1) auto();

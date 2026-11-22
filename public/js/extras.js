@@ -23,20 +23,54 @@
     return close;
   }
 
-  // ---------- sign in / register (accounts live on the secure booking portal) ----------
-  function auth() {
+  // ---------- sign in / register (accounts are stored in the Jumbo Travel admin database) ----------
+  const post = async (url, data) => {
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data || {}) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error && !/storage/i.test(j.error) ? j.error : 'Something went wrong. Please try again.');
+    return j;
+  };
+  window.jtAuth = auth;
+  function auth(mode = 'login', next = '/account') {
     modal('auth', `
       <div class="auth-art" aria-hidden="true"><span class="auth-globe"></span><b>Your trips,<br><em>all in one place.</em></b><p>Bookings, e-tickets, invoices and exclusive member fares.</p></div>
       <div class="auth-body">
-        <span class="eyebrow">Jumbo Travel account</span><h3>Welcome back</h3>
-        <p class="muted">Sign in or create your account on our secure booking portal. You'll be redirected safely.</p>
-        <div class="auth-opts">
-          <a class="auth-opt" href="${PORTAL}?login=true" rel="noopener"><span class="ao-ic"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M10 17l1.4-1.4-2.6-2.6H20v-2H8.8l2.6-2.6L10 7l-5 5zM20 3h-8v2h8v14h-8v2h8a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z" fill="currentColor"/></svg></span><span><b>Sign in</b><small>With your email or phone number</small></span>${ARROW}</a>
-          <a class="auth-opt" href="${PORTAL}?register=true" rel="noopener"><span class="ao-ic alt"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M15 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2zm9 4c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z" fill="currentColor"/></svg></span><span><b>Create new account</b><small>Faster checkout and member deals</small></span>${ARROW}</a>
-          <a class="auth-opt ghost" href="/manage-booking"><span class="ao-ic ghost"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H5V8h14z" fill="currentColor"/></svg></span><span><b>No account?</b><small>Find a booking with your reference number</small></span>${ARROW}</a>
-        </div>
-        <p class="secure-note"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 2l8 3v6c0 5-3.4 9.7-8 11-4.6-1.3-8-6-8-11V5zm-1.2 13.6l6-6-1.4-1.4-4.6 4.6-2.2-2.2-1.4 1.4z" fill="currentColor"/></svg>Protected with bank-grade encryption</p>
-      </div>`);
+        <span class="eyebrow">Jumbo Travel account</span><h3 data-h>Welcome back</h3>
+        <div class="auth-tabs" role="tablist"><button type="button" data-m="login">Sign in</button><button type="button" data-m="register">Create account</button></div>
+        <form class="auth-form" novalidate>
+          <label data-reg>Full name<input name="name" autocomplete="name" placeholder="Your name"></label>
+          <label><span data-idl>Email or phone</span><input name="email" autocomplete="username" placeholder="you@email.com" required></label>
+          <label data-reg>Mobile number <small>(optional)</small><input name="phone" type="tel" autocomplete="tel" placeholder="+965 …"></label>
+          <label>Password<input name="password" type="password" autocomplete="current-password" placeholder="••••••••" required minlength="8"></label>
+          <p class="auth-err" role="alert"></p>
+          <button class="btn btn-primary auth-go" type="submit"><span>Sign in</span>${ARROW}</button>
+        </form>
+        <a class="auth-opt ghost" href="/manage-booking#guest"><span class="ao-ic ghost"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H5V8h14z" fill="currentColor"/></svg></span><span><b>No account?</b><small>Find a booking with your reference number</small></span>${ARROW}</a>
+        <p class="secure-note"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 2l8 3v6c0 5-3.4 9.7-8 11-4.6-1.3-8-6-8-11V5zm-1.2 13.6l6-6-1.4-1.4-4.6 4.6-2.2-2.2-1.4 1.4z" fill="currentColor"/></svg>Your password is encrypted and never shared</p>
+      </div>`, (m, close) => {
+      const f = q('form', m), err = q('.auth-err', m);
+      const set = md => {
+        mode = md; m.classList.toggle('is-reg', md === 'register');
+        qa('[data-m]', m).forEach(b => b.classList.toggle('on', b.dataset.m === md));
+        q('[data-h]', m).textContent = md === 'register' ? 'Create your account' : 'Welcome back';
+        q('[data-idl]', m).textContent = md === 'register' ? 'Email' : 'Email or phone';
+        f.elements.password.autocomplete = md === 'register' ? 'new-password' : 'current-password';
+        q('.auth-go span', m).textContent = md === 'register' ? 'Create account' : 'Sign in'; err.textContent = '';
+      };
+      qa('[data-m]', m).forEach(b => b.onclick = () => set(b.dataset.m)); set(mode);
+      f.onsubmit = async e => {
+        e.preventDefault(); err.textContent = ''; const btn = q('.auth-go', m); btn.disabled = true;
+        const v = Object.fromEntries(new FormData(f));
+        try {
+          await post(`/api/account/${mode}`, mode === 'register' ? v : { email: v.email, password: v.password });
+          close(); location.href = next;
+        } catch (x) { err.textContent = x.message; } finally { btn.disabled = false; }
+      };
+      setTimeout(() => f.elements[mode === 'register' ? 'name' : 'email'].focus(), 300);
+    });
+  }
+  async function session() {
+    try { const r = await fetch('/api/account/me', { credentials: 'same-origin' }); if (!r.ok) return null; return await r.json(); } catch { return null; }
   }
 
   // ---------- concierge chat launcher ----------
@@ -73,7 +107,7 @@
   function thanks(el, msg) { el.innerHTML = `<div class="sub-ok"><span>✓</span><div><b>You're on the list</b><small>${E(msg)}</small></div></div>`; }
 
   function frequentPopup() {
-    if (store.get('jt-ft') || location.pathname.startsWith('/manage-booking')) return;
+    if (store.get('jt-ft') || location.pathname.startsWith('/manage-booking') || location.pathname.startsWith('/account')) return;
     let shown = false;
     const show = () => {
       if (shown || document.querySelector('.jt-modal')) return; shown = true; store.set('jt-ft', Date.now());
@@ -125,12 +159,74 @@
     q('#mb-call').href = `tel:${(SITE.phone || '').replace(/\s/g, '')}`; q('#mb-call b').textContent = SITE.phone;
     q('#mb-mail').href = `mailto:${SITE.email}`; q('#mb-mail b').textContent = SITE.email;
     const wa = (SITE.whatsapp || '').replace(/\D/g, ''); if (wa) { q('#mb-wa').href = `https://wa.me/${wa}`; q('#mb-wa').hidden = false; }
+    const f = q('#guest'); if (!f) return;
+    if (location.hash === '#guest') setTimeout(() => { f.scrollIntoView({ behavior: 'smooth', block: 'center' }); f.elements.ref.focus(); }, 400);
+    f.onsubmit = async e => {
+      e.preventDefault(); const err = q('.auth-err', f), btn = q('button', f); err.textContent = ''; btn.disabled = true;
+      try { const b = await post('/api/bookings/lookup', Object.fromEntries(new FormData(f))); q('#guest-result').innerHTML = bookingCard(b); }
+      catch (x) { err.textContent = x.message; q('#guest-result').innerHTML = ''; } finally { btn.disabled = false; }
+    };
+  }
+
+  // ---------- bookings ----------
+  const STATUS = { pending: ['Request received', 'We\'re preparing your options'], confirmed: ['Confirmed', 'Your booking is confirmed'], ticketed: ['Ticketed', 'Tickets issued'], completed: ['Completed', 'Hope you had a great trip'], cancelled: ['Cancelled', 'This booking was cancelled'] };
+  const TYPE = { flight: 'Flight', hotel: 'Hotel', package: 'Holiday package', 'flight+hotel': 'Flight + Hotel', other: 'Travel service' };
+  const money = n => `${E(SITE.currency || 'KWD')} ${Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}`;
+  const day = d => { if (!d) return ''; const x = new Date(d); return isNaN(x) ? E(d) : x.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); };
+  function bookingCard(b) {
+    const st = STATUS[b.status] || STATUS.pending, due = Math.max(0, (b.amount || 0) - (b.paid || 0));
+    return `<article class="bk-card st-${E(b.status)}">
+      <header><div><small>${E(TYPE[b.type] || 'Booking')} · Ref <b>${E(b.ref)}</b></small><h3>${E(b.title)}</h3></div><span class="bk-st">${st[0]}</span></header>
+      <div class="bk-grid">
+        <div><small>Travel</small><b>${b.travelDate ? day(b.travelDate) + (b.returnDate ? ' – ' + day(b.returnDate) : '') : 'Dates to be confirmed'}</b></div>
+        <div><small>Travellers</small><b>${E(b.travellers || 1)}</b></div>
+        <div><small>Total</small><b>${b.amount ? money(b.amount) : 'Quote pending'}</b></div>
+        <div><small>Balance due</small><b class="${due ? 'due' : 'ok'}">${b.amount ? (due ? money(due) : 'Paid in full') : '—'}</b></div>
+      </div>
+      ${b.details ? `<p class="bk-det">${E(b.details).replace(/\n/g, '<br>')}</p>` : `<p class="bk-det muted">${st[1]}. Our team will add your itinerary and e-tickets here.</p>`}
+      ${b.customerNote ? `<p class="bk-note"><b>Your note:</b> ${E(b.customerNote)}</p>` : ''}
+    </article>`;
+  }
+  async function account() {
+    const root = q('#account'); if (!root) return;
+    const body = q('#acct-body'); const me = await session();
+    if (!me) {
+      body.innerHTML = `<div class="acct-empty"><h2>Sign in to view your bookings</h2><p>Use the email or phone and password for your Jumbo Travel account.</p>
+        <div class="acct-acts"><button class="btn btn-primary" data-in>Sign in</button><button class="btn btn-ghost" data-reg>Create account</button><a class="btn btn-ghost" href="/manage-booking#guest">Find a guest booking</a></div></div>`;
+      q('[data-in]', body).onclick = () => auth('login'); q('[data-reg]', body).onclick = () => auth('register'); return;
+    }
+    const u = me.user;
+    q('#acct-hi').innerHTML = `Hello, <em>${E(u.name.split(' ')[0])}</em>`;
+    q('#acct-sub').textContent = `Signed in as ${u.email}${u.phone ? ' · ' + u.phone : ''}`;
+    const draw = list => {
+      body.innerHTML = `<div class="acct-top"><h2>My bookings <span>${list.length}</span></h2><div class="acct-acts"><button class="btn btn-primary" data-new>+ Request a trip</button><button class="btn btn-ghost" data-out>Sign out</button></div></div>
+        <div class="bk-list">${list.map(bookingCard).join('') || `<div class="acct-empty"><h3>No bookings yet</h3><p>Bookings made with Jumbo Travel using <b>${E(u.email)}</b> will show up here automatically. Planning something? Send us a trip request.</p></div>`}</div>`;
+      q('[data-out]', body).onclick = async () => { await post('/api/account/logout'); location.href = '/'; };
+      q('[data-new]', body).onclick = () => modal('auth req', `<div class="auth-body" style="grid-column:1/-1">
+          <span class="eyebrow">Trip request</span><h3>Where would you like to go?</h3><p class="muted">Tell us the basics and a travel expert will send you options.</p>
+          <form class="auth-form" novalidate>
+            <label>Destination / trip<input name="title" placeholder="e.g. Istanbul, 5 nights with flights" required></label>
+            <label>What do you need?<select name="type"><option value="package">Holiday package</option><option value="flight">Flight</option><option value="hotel">Hotel</option><option value="flight+hotel">Flight + Hotel</option><option value="other">Something else</option></select></label>
+            <div class="two"><label>Departure<input type="date" name="travelDate"></label><label>Return<input type="date" name="returnDate"></label></div>
+            <label>Travellers<input type="number" name="travellers" min="1" max="99" value="2"></label>
+            <label>Anything else?<textarea name="customerNote" rows="3" placeholder="Budget, hotel preference, kids' ages…"></textarea></label>
+            <p class="auth-err" role="alert"></p><button class="btn btn-primary auth-go" type="submit"><span>Send request</span>${ARROW}</button>
+          </form></div>`, (m, close) => {
+          const f = q('form', m); f.onsubmit = async e => {
+            e.preventDefault(); const err = q('.auth-err', m); err.textContent = '';
+            try { const b = await post('/api/account/request', Object.fromEntries(new FormData(f))); close(); list.unshift(b); draw(list); }
+            catch (x) { err.textContent = x.message; }
+          };
+        });
+    };
+    draw(me.bookings);
   }
 
   document.addEventListener('jt:content', ({ detail: c }) => {
     SITE = c.site || {};
-    qa('[data-auth]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); auth(); }));
-    routes(); manage(); chat(); frequentPopup();
+    qa('[data-auth]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); if (b.dataset.signedIn) location.href = '/account'; else auth(); }));
+    session().then(me => { if (!me) return; qa('[data-auth]').forEach(b => { b.dataset.signedIn = 1; b.textContent = 'My account'; }); });
+    routes(); manage(); account(); chat(); frequentPopup();
     const sf = q('#subscribe');
     if (sf) sf.onsubmit = async e => { e.preventDefault(); const i = q('input', sf), b = q('button', sf); b.disabled = true;
       try { await subscribe(i.value.trim(), '', 'newsletter'); thanks(sf, 'Member deals are on their way.'); store.set('jt-ft', Date.now()); }
